@@ -23,7 +23,7 @@
         group: relay
         mode: "0600"
       loop: [relay.db, compteurs.txt]
-      ignore_errors: true
+      ignore_errors: "{{ item != 'relay.db' }}"  # sans base dans le snapshot, le playbook doit échouer
 
     - name: Nettoyer les fichiers WAL d'avant restauration
       ansible.builtin.file:
@@ -35,3 +35,8 @@
       ansible.builtin.systemd_service:
         name: relay
         state: started
+
+    - name: Nettoyer la copie extraite
+      ansible.builtin.file:
+        path: /tmp/relay-restore
+        state: absent

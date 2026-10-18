@@ -10,14 +10,19 @@ from tests.test_blobs import deposer
 from tests.test_comptes import ID, JETON, creer, entete
 
 
+from relay_serveur.abonnement import Transaction, jeton_de_compte
+
+
 class FauxVerificateur:
     def __init__(self, expire_le=None):
         self.expire = expire_le
+        self.revoquee = False
+        self.app_account_token = None
 
-    def expire_le(self, jws):
-        if jws != "jws-valide":
+    def verifier(self, jws):
+        if not jws.startswith("jws-valide"):
             raise ValueError("signature invalide")
-        return self.expire
+        return Transaction(expire_le=self.expire, origine="tx-" + jws, revoquee=self.revoquee, app_account_token=self.app_account_token)
 
 
 @pytest.fixture
@@ -62,4 +67,41 @@ def test_verificateur_apple_rejette_un_jws_bidon(config):
     config.apple_app_id = 123456
     v = VerificateurApple(config)
     with pytest.raises(ValueError):
-        v.expire_le("a.b.c")
+        v.verifier("a.b.c")
+
+
+def test_meme_transaction_pour_deux_comptes_refusee(serveur):
+    c, base, v = serveur
+    creer(c, id="B" * 26, jeton="b" * 43)
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 200
+    r = c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete("b" * 43))
+    assert r.status_code == 409
+    assert base.execute("select abonne_jusqu_au from comptes where id = ?", ("B" * 26,)).fetchone()[0] is None
+
+
+def test_renouvellement_meme_compte_accepte(serveur):
+    c, base, v = serveur
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 200
+    v.expire += 30 * 86400
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 200
+
+
+def test_transaction_revoquee_400(serveur):
+    c, base, v = serveur
+    v.revoquee = True
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 400
+    assert deposer(c, "prevu.json").status_code == 402
+
+
+def test_app_account_token_doit_correspondre_au_compte(serveur):
+    c, base, v = serveur
+    v.app_account_token = jeton_de_compte("B" * 26)
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 400
+    v.app_account_token = jeton_de_compte(ID)
+    assert c.post("/abonnement", json={"transaction": "jws-valide"}, headers=entete()).status_code == 200
+
+
+def test_jeton_de_compte_stable_et_uuid():
+    import uuid
+    assert jeton_de_compte(ID) == jeton_de_compte(ID)
+    uuid.UUID(jeton_de_compte(ID))

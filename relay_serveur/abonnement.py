@@ -1,8 +1,12 @@
 """Abonnement : barrière `abonne_requis`, et vérification des transactions App Store (JWS signé par Apple)
-avec la bibliothèque officielle. `RELAY_GRATUIT=1` désactive toute barrière (auto-hébergement)."""
+avec la bibliothèque officielle. Une transaction vaut pour un seul compte : son identifiant d'origine est
+gardé avec un index unique, et si l'app a posé un appAccountToken il doit être celui du compte.
+`RELAY_GRATUIT=1` désactive toute barrière (auto-hébergement)."""
 
 import sqlite3
 import time
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -26,9 +30,22 @@ def abonne_requis(request: Request) -> str:
     return compte
 
 
+def jeton_de_compte(compte: str) -> str:
+    """UUID que l'app pose comme appAccountToken à l'achat : dérivé de l'identifiant, sans secret."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, "relay:" + compte))
+
+
+@dataclass
+class Transaction:
+    expire_le: float  # secondes
+    origine: str  # originalTransactionId : identifie l'abonnement à travers ses renouvellements
+    revoquee: bool = False
+    app_account_token: str | None = None
+
+
 class Verificateur(Protocol):
-    def expire_le(self, jws: str) -> float:
-        """Horodatage (secondes) de fin de l'abonnement porté par la transaction ; ValueError si elle est invalide."""
+    def verifier(self, jws: str) -> Transaction:
+        """Transaction décodée si la signature, le bundle et l'app sont bons ; ValueError sinon."""
 
 
 class VerificateurApple:
@@ -44,22 +61,23 @@ class VerificateurApple:
         env = Environment.PRODUCTION if config.apple_env.lower() == "production" else Environment.SANDBOX
         self._verificateur = SignedDataVerifier(racines, False, env, config.apns_bundle, config.apple_app_id or None)
 
-    def expire_le(self, jws: str) -> float:
+    def verifier(self, jws: str) -> Transaction:
         from appstoreserverlibrary.signed_data_verifier import VerificationException
 
         try:
-            transaction = self._verificateur.verify_and_decode_signed_transaction(jws)
+            t = self._verificateur.verify_and_decode_signed_transaction(jws)
         except (VerificationException, ValueError, TypeError) as e:
             raise ValueError(f"transaction refusée : {type(e).__name__}") from None
-        if not transaction.expiresDate:
-            raise ValueError("transaction sans date d'expiration")
-        return transaction.expiresDate / 1000
+        if not t.expiresDate or not t.originalTransactionId:
+            raise ValueError("transaction sans expiration ou sans identifiant d'origine")
+        return Transaction(expire_le=t.expiresDate / 1000, origine=str(t.originalTransactionId),
+                           revoquee=bool(t.revocationDate), app_account_token=str(t.appAccountToken) if t.appAccountToken else None)
 
 
 class VerificateurAbsent:
     """Serveur sans configuration Apple (auto-hébergement gratuit, tests) : aucune transaction n'est acceptée."""
 
-    def expire_le(self, jws: str) -> float:
+    def verifier(self, jws: str) -> Transaction:
         raise ValueError("vérification App Store non configurée")
 
 
@@ -77,10 +95,18 @@ def routeur(verificateur: Verificateur) -> APIRouter:
         if not isinstance(jws, str) or not jws:
             raise HTTPException(400, "transaction attendue")
         try:
-            expire = verificateur.expire_le(jws)
+            t = verificateur.verifier(jws)
         except ValueError:
             raise HTTPException(400, "transaction invalide")
-        request.app.state.base.execute("update comptes set abonne_jusqu_au = ? where id = ?", (expire, compte))
-        return {"abonne_jusqu_au": expire}
+        if t.revoquee:
+            raise HTTPException(400, "transaction révoquée")
+        if t.app_account_token and t.app_account_token.lower() != jeton_de_compte(compte):
+            raise HTTPException(400, "transaction d'un autre compte")
+        base = request.app.state.base
+        autre = base.execute("select id from comptes where transaction_origine = ? and id != ?", (t.origine, compte)).fetchone()
+        if autre:
+            raise HTTPException(409, "transaction déjà utilisée par un autre compte")
+        base.execute("update comptes set abonne_jusqu_au = ?, transaction_origine = ? where id = ?", (t.expire_le, t.origine, compte))
+        return {"abonne_jusqu_au": t.expire_le}
 
     return r

@@ -10,7 +10,8 @@ create table if not exists comptes (
     apns_env text,
     cree_le real not null,
     vu_le real not null,
-    abonne_jusqu_au real
+    abonne_jusqu_au real,
+    transaction_origine text
 );
 create table if not exists blobs (
     compte text not null references comptes(id) on delete cascade,
@@ -26,6 +27,7 @@ create table if not exists reveils (
 );
 create index if not exists reveils_compte on reveils(compte, quand);
 create index if not exists comptes_jeton on comptes(jeton_hache);
+create unique index if not exists comptes_transaction on comptes(transaction_origine) where transaction_origine is not null;
 """
 
 

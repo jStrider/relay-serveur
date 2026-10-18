@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from .comptes import authentifier
+from . import comptes
 
 journal = logging.getLogger("relay")
 
@@ -29,7 +29,11 @@ def installer(app: FastAPI) -> None:
     @app.middleware("http")
     async def debit_et_journal(request: Request, suite):
         debut = time.time()
-        compte = authentifier(app.state.base, request.headers.get("Authorization")) if request.headers.get("Authorization") else None
+        if any(c in request.scope.get("path", "") for c in "\n\r\x00"):  # scope["path"] garde le saut de ligne final que url.path perd
+            return JSONResponse({"status": "chemin refusé"}, status_code=400)
+        compte = comptes.authentifier(app.state.base, request.headers.get("Authorization")) if request.headers.get("Authorization") else None
+        request.state.compte = compte
+        request.state.authentifie = True
         if compte:
             f = fenetres[compte]
             while f and f[0] < debut - 60:

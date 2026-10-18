@@ -50,8 +50,11 @@ def purger_inactifs(base: sqlite3.Connection, avant: float) -> int:
 
 
 def compte_courant(request: Request) -> str:
-    """Dépendance FastAPI : l'identifiant du compte authentifié, sinon 401."""
-    id = authentifier(request.app.state.base, request.headers.get("Authorization"))
+    """Dépendance FastAPI : l'identifiant du compte authentifié, sinon 401. Le middleware de débit a déjà
+    authentifié la requête et posé request.state.compte : on ne refait pas la recherche."""
+    id = getattr(request.state, "compte", None)
+    if id is None and not getattr(request.state, "authentifie", False):
+        id = authentifier(request.app.state.base, request.headers.get("Authorization"))
     if id is None:
         raise HTTPException(401, "jeton invalide")
     return id

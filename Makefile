@@ -1,10 +1,10 @@
-include .env
+-include .env
 export
 
 TF := terraform -chdir=deploy/terraform
 SSH := ssh -i ~/.ssh/hermes_ed25519 -o StrictHostKeyChecking=accept-new debian@$$($(TF) output -raw host)
 PLAYBOOK := cd deploy/ansible && ansible-playbook
-WHEEL := $(shell ls -t dist/relay_serveur-*.whl 2>/dev/null | head -1)
+WHEEL = $(shell ls -t dist/relay_serveur-*.whl 2>/dev/null | head -1)  # évalué à l'usage, après la cible dist
 
 .PHONY: test dist infra deploy restore ssh backup-now backup-status
 

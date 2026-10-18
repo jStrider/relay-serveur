@@ -4,16 +4,17 @@ import re
 import sqlite3
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.concurrency import run_in_threadpool
 
 from .abonnement import abonne_requis
 from .comptes import compte_courant
 
-NOM_RE = re.compile(r"^(metriques/[a-z_]+/\d{4}-\d{2}\.json|seances/\d{4}-\d{2}-\d{2}-[A-Za-z0-9-]+\.json|etat\.json|prevu\.json)$")
+NOM_RE = re.compile(r"(metriques/[a-z_]+/[0-9]{4}-[0-9]{2}\.json|seances/[0-9]{4}-[0-9]{2}-[0-9]{2}-[A-Za-z0-9-]+\.json|etat\.json|prevu\.json)", re.ASCII)
 
 
 def nom_valide(nom: str) -> bool:
-    return bool(NOM_RE.match(nom))
+    return bool(NOM_RE.fullmatch(nom))  # fullmatch : pas de saut de ligne final ; ASCII : pas de chiffres Unicode
 
 
 def deposer(base: sqlite3.Connection, compte: str, nom: str, contenu: bytes) -> float:
@@ -51,14 +52,7 @@ def routeur() -> APIRouter:
             raise HTTPException(400, "nom de blob refusé")
         return nom
 
-    @r.put("/blobs/{nom:path}")
-    async def deposer_blob(nom: str, request: Request):
-        verifier_nom(nom)
-        compte = abonne_requis(request) if nom == "prevu.json" else compte_courant(request)
-        config, base = request.app.state.config, request.app.state.base
-        contenu = await request.body()
-        if len(contenu) > config.max_blob:
-            raise HTTPException(413, "blob trop gros")
+    def _deposer(base, config, compte, nom, contenu):
         nombre, octets = usage(base, compte)
         existant = base.execute("select taille from blobs where compte = ? and nom = ?", (compte, nom)).fetchone()
         if existant is None and nombre >= config.max_blobs:
@@ -66,6 +60,19 @@ def routeur() -> APIRouter:
         if octets - (existant[0] if existant else 0) + len(contenu) > config.max_octets:
             raise HTTPException(507, "quota d'octets dépassé pour ce compte")
         return {"maj": deposer(base, compte, nom, contenu)}
+
+    @r.put("/blobs/{nom:path}")
+    async def deposer_blob(nom: str, request: Request):
+        verifier_nom(nom)
+        compte = abonne_requis(request) if nom == "prevu.json" else compte_courant(request)
+        config, base = request.app.state.config, request.app.state.base
+        annonce = request.headers.get("Content-Length")
+        if annonce and annonce.isdigit() and int(annonce) > config.max_blob:
+            raise HTTPException(413, "blob trop gros")  # refusé avant de lire le corps
+        contenu = await request.body()
+        if len(contenu) > config.max_blob:
+            raise HTTPException(413, "blob trop gros")
+        return await run_in_threadpool(_deposer, base, config, compte, nom, contenu)  # SQLite hors de la boucle d'événements
 
     @r.get("/blobs")
     def lister_blobs(request: Request, depuis: float | None = None):

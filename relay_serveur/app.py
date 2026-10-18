@@ -4,6 +4,7 @@ import sqlite3
 
 from fastapi import FastAPI
 
+from . import comptes
 from .config import Config
 
 
@@ -17,5 +18,7 @@ def creer_app(config: Config, base: sqlite3.Connection, envoyeur=None, verificat
     @app.get("/sante")
     def sante():
         return {"status": "ok"}
+
+    app.include_router(comptes.routeur())
 
     return app

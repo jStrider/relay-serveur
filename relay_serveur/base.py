@@ -25,6 +25,7 @@ create table if not exists reveils (
     quand real not null
 );
 create index if not exists reveils_compte on reveils(compte, quand);
+create index if not exists comptes_jeton on comptes(jeton_hache);
 """
 
 

@@ -1,0 +1,11 @@
+.superpowers/
+.venv/
+__pycache__/
+*.db
+*.db-*
+.env
+dist/
+deploy/ansible/inventory.ini
+deploy/ansible/vars.yml
+deploy/terraform/.terraform/
+deploy/terraform/*.tfstate*

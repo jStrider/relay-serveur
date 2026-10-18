@@ -1,0 +1,42 @@
+- name: Restaurer Relay depuis le dernier snapshot restic
+  hosts: relay
+  become: true
+
+  tasks:
+    - name: Arrêter relay
+      ansible.builtin.systemd_service:
+        name: relay
+        state: stopped
+
+    - name: Extraire le dernier snapshot
+      ansible.builtin.shell: |
+        set -a; . /etc/relay-backup.env
+        rm -rf /tmp/relay-restore
+        restic restore latest --host relay --target /tmp/relay-restore
+
+    - name: Remettre la base et les compteurs
+      ansible.builtin.copy:
+        src: "/tmp/relay-restore/var/backups/relay/{{ item }}"
+        dest: "/var/lib/relay/{{ item }}"
+        remote_src: true
+        owner: relay
+        group: relay
+        mode: "0600"
+      loop: [relay.db, compteurs.txt]
+      ignore_errors: "{{ item != 'relay.db' }}"  # sans base dans le snapshot, le playbook doit échouer
+
+    - name: Nettoyer les fichiers WAL d'avant restauration
+      ansible.builtin.file:
+        path: "/var/lib/relay/relay.db{{ item }}"
+        state: absent
+      loop: ["-wal", "-shm"]
+
+    - name: Redémarrer relay
+      ansible.builtin.systemd_service:
+        name: relay
+        state: started
+
+    - name: Nettoyer la copie extraite
+      ansible.builtin.file:
+        path: /tmp/relay-restore
+        state: absent

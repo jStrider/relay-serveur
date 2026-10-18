@@ -1,0 +1,12 @@
+#!/bin/bash
+# Copie cohérente de la base SQLite, puis envoi chiffré vers l'Object Storage.
+set -euo pipefail
+set -a; . /etc/relay-backup.env; set +a
+
+dir=/var/backups/relay
+install -d -o relay -g relay -m 700 "$dir"
+runuser -u relay -- sqlite3 /var/lib/relay/relay.db ".backup '$dir/relay.db'"
+cp -f /var/lib/relay/compteurs.txt "$dir/" 2>/dev/null || true
+
+restic backup --host relay --tag relay "$dir"
+restic forget --host relay --keep-daily 7 --keep-weekly 4 --prune

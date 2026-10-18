@@ -1,0 +1,168 @@
+- name: Relay
+  hosts: relay
+  become: true
+  vars_files: vars.yml
+
+  tasks:
+    - name: Paquets
+      ansible.builtin.apt:
+        name: [python3, python3-venv, python3-pip, sqlite3, caddy, restic, fail2ban, unattended-upgrades]
+        update_cache: true
+
+    - name: SSH par clé uniquement
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/10-hardening.conf
+        content: |
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          PermitRootLogin no
+      notify: Reload sshd
+
+    - name: fail2ban actif (règle sshd par défaut)
+      ansible.builtin.systemd_service:
+        name: fail2ban
+        enabled: true
+        state: started
+
+    - name: Utilisateur relay (système, sans shell)
+      ansible.builtin.user:
+        name: relay
+        system: true
+        shell: /usr/sbin/nologin
+        create_home: false
+
+    - name: Dossiers
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: /opt/relay, owner: root, group: root, mode: "0755" }
+        - { path: /var/lib/relay, owner: relay, group: relay, mode: "0700" }
+        - { path: /etc/relay, owner: root, group: relay, mode: "0750" }
+        - { path: /etc/relay/apple, owner: root, group: relay, mode: "0750" }
+
+    # L'application arrive en wheel construite sur le Mac (make dist), installée dans un venv.
+    - name: Wheel de l'application
+      ansible.builtin.copy:
+        src: "{{ wheel }}"
+        dest: "/opt/relay/{{ wheel | basename }}"
+        mode: "0644"
+      register: wheel_copiee
+
+    - name: Venv
+      ansible.builtin.command: python3 -m venv /opt/relay/venv
+      args:
+        creates: /opt/relay/venv/bin/python
+
+    - name: Installer l'application dans le venv
+      ansible.builtin.pip:
+        name: "file:///opt/relay/{{ wheel | basename }}"
+        virtualenv: /opt/relay/venv
+        state: "{{ 'forcereinstall' if wheel_copiee.changed else 'present' }}"
+      notify: Restart relay
+
+    - name: Certificats racine Apple
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /etc/relay/apple/
+        owner: root
+        group: relay
+        mode: "0640"
+      with_fileglob: "../apple/*.cer"
+      notify: Restart relay
+
+    - name: Clé APNs
+      ansible.builtin.copy:
+        src: "{{ apns_cle_fichier }}"
+        dest: /etc/relay/apns.p8
+        owner: root
+        group: relay
+        mode: "0640"
+      when: apns_cle_fichier | length > 0
+      no_log: true
+      notify: Restart relay
+
+    - name: Environnement du service
+      ansible.builtin.template:
+        src: relay.env.j2
+        dest: /etc/relay/relay.env
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      notify: Restart relay
+
+    - name: Service relay
+      ansible.builtin.template:
+        src: relay.service.j2
+        dest: /etc/systemd/system/relay.service
+        mode: "0644"
+      notify: Restart relay
+
+    - name: Démarrer relay
+      ansible.builtin.systemd_service:
+        name: relay
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Caddy
+      ansible.builtin.template:
+        src: Caddyfile.j2
+        dest: /etc/caddy/Caddyfile
+        mode: "0644"
+      notify: Reload Caddy
+
+    - name: Identifiants restic
+      ansible.builtin.template:
+        src: restic.env.j2
+        dest: /etc/relay-backup.env
+        mode: "0600"
+      no_log: true
+
+    - name: Dépôt restic initialisé
+      ansible.builtin.shell: |
+        set -a; . /etc/relay-backup.env
+        restic snapshots >/dev/null 2>&1 || restic init
+      changed_when: false
+
+    - name: Script de sauvegarde
+      ansible.builtin.template:
+        src: relay-backup.sh.j2
+        dest: /usr/local/bin/relay-backup
+        mode: "0755"
+
+    - name: Unités de sauvegarde
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: "/etc/systemd/system/{{ item }}"
+        mode: "0644"
+      loop: [relay-backup.service, relay-backup.timer]
+      notify: Activer le timer de sauvegarde
+
+  handlers:
+    - name: Reload sshd
+      ansible.builtin.service:
+        name: ssh
+        state: reloaded
+
+    - name: Restart relay
+      ansible.builtin.systemd_service:
+        name: relay
+        state: restarted
+        daemon_reload: true
+
+    - name: Reload Caddy
+      ansible.builtin.service:
+        name: caddy
+        state: reloaded
+
+    - name: Activer le timer de sauvegarde
+      ansible.builtin.systemd_service:
+        name: relay-backup.timer
+        enabled: true
+        state: started
+        daemon_reload: true

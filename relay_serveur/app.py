@@ -4,7 +4,7 @@ import sqlite3
 
 from fastapi import FastAPI
 
-from . import blobs, comptes
+from . import apns, blobs, comptes, rafraichir
 from .config import Config
 
 
@@ -21,5 +21,7 @@ def creer_app(config: Config, base: sqlite3.Connection, envoyeur=None, verificat
 
     app.include_router(comptes.routeur())
     app.include_router(blobs.routeur())
+    envoyeur = envoyeur or apns.Envoyeur(config)
+    app.include_router(rafraichir.routeur(rafraichir.Rafraichisseur(base, envoyeur, config)))
 
     return app

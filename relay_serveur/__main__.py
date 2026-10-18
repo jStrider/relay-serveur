@@ -27,7 +27,7 @@ def main():
     config = Config.depuis_env()
     connexion = base.ouvrir(config.base)
     threading.Thread(target=entretien, args=(connexion, config), daemon=True).start()
-    uvicorn.run(creer_app(config, connexion), host="127.0.0.1", port=8780, log_level="warning")
+    uvicorn.run(creer_app(config, connexion), host=config.hote, port=8780, log_level="warning")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ class Config:
     apple_env: str = "Sandbox"  # Sandbox ou Production
     apple_racines: str = ""  # dossier des certificats racine Apple
     compteurs: str = ""  # fichier des compteurs d'usage par jour
+    hote: str = "127.0.0.1"  # RELAY_HOTE=0.0.0.0 pour un essai depuis un iPhone sur le réseau local, jamais en production (Caddy devant)
     max_blobs: int = 1000
     max_octets: int = 200 * 1024 * 1024
     max_blob: int = 1024 * 1024
@@ -38,4 +39,5 @@ class Config:
             apple_env=e.get("APPLE_ENV", "Sandbox"),
             apple_racines=e.get("APPLE_RACINES", ""),
             compteurs=e.get("RELAY_COMPTEURS", ""),
+            hote=e.get("RELAY_HOTE") or "127.0.0.1",
         )

@@ -1,0 +1,25 @@
+[Unit]
+Description=Relay, relais chiffré entre l'app et un agent IA
+After=network.target
+
+[Service]
+User=relay
+Group=relay
+EnvironmentFile=/etc/relay/relay.env
+ExecStart=/opt/relay/venv/bin/relay-serveur
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/relay
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

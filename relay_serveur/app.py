@@ -4,7 +4,7 @@ import sqlite3
 
 from fastapi import FastAPI
 
-from . import abonnement, apns, blobs, comptes, rafraichir
+from . import abonnement, apns, blobs, comptes, limites, rafraichir
 from .config import Config
 
 
@@ -14,6 +14,8 @@ def creer_app(config: Config, base: sqlite3.Connection, envoyeur=None, verificat
     app.state.base = base
     app.state.envoyeur = envoyeur
     app.state.verificateur = verificateur
+
+    limites.installer(app)
 
     @app.get("/sante")
     def sante():

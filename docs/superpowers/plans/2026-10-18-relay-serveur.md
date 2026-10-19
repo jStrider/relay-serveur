@@ -16,7 +16,7 @@
 - Aucun corps de requête ni contenu de blob dans un journal, une exception ou une réponse d'erreur : les journaux portent méthode, chemin, code, identifiant de compte, durée.
 - Toute route sauf `GET /sante` et `POST /comptes` exige `Authorization: Bearer <jeton>` ; le serveur compare `SHA-256(jeton)` en temps constant et ne stocke jamais le jeton.
 - Noms de blobs autorisés, et rien d'autre : `metriques/<nom>/<AAAA-MM>.json` (`nom` en `[a-z_]+`), `seances/<AAAA-MM-JJ>-<id>.json` (`id` en `[A-Za-z0-9-]+`), `etat.json`, `prevu.json`. Tout autre nom → `400`.
-- Limites : blob 1 Mo (`413`), 1 000 blobs et 200 Mo par compte (`507`), 120 requêtes par minute et par compte (`429`), 6 réveils par heure (`429`), `POST /comptes` 10 par heure et par adresse IP (`429`).
+- Limites : blob 1 Mo (`413`), 1 000 blobs et 200 Mo par compte (`507`), 600 requêtes par minute et par compte (`429`), 6 réveils par heure (`429`), `POST /comptes` 10 par heure et par adresse IP (`429`).
 - Rafraîchissement : grâce 120 s sur l'horodatage de dépôt du dernier `etat.json`, attente 25 s, un seul réveil à la fois par compte, codes `200/402/429/502/503/504` comme en v1.
 - `RELAY_GRATUIT=1` désactive toute barrière d'abonnement (auto-hébergement). Sinon `PUT /blobs/prevu.json` et `POST /rafraichir` répondent `402` sans abonnement valide.
 - Variables d'environnement (fichier `/etc/relay/relay.env` en production) : `RELAY_BASE` (chemin SQLite), `RELAY_GRATUIT`, `APNS_CLE`, `APNS_CLE_ID`, `APNS_EQUIPE`, `APNS_BUNDLE`, `APPLE_APP_ID`, `APPLE_ENV` (`Sandbox`/`Production`), `APPLE_RACINES` (dossier des certificats racine Apple). Pas de valeur secrète par défaut.

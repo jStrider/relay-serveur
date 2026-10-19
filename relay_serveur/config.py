@@ -20,7 +20,7 @@ class Config:
     max_blobs: int = 1000
     max_octets: int = 200 * 1024 * 1024
     max_blob: int = 1024 * 1024
-    requetes_par_minute: int = 120
+    requetes_par_minute: int = 600  # la première synchro dépose 13 mois × 14 métriques + les séances en une rafale
     reveils_par_heure: int = 6
     creations_par_heure_ip: int = 10
     extra: dict = field(default_factory=dict)

@@ -7,7 +7,7 @@ import time
 
 import uvicorn
 
-from . import base, comptes, limites
+from . import appairages, base, comptes, limites
 from .app import creer_app
 from .config import Config
 
@@ -16,6 +16,7 @@ def entretien(connexion, config):
     while True:
         try:
             comptes.purger_inactifs(connexion, time.time() - 365 * 86400)
+            appairages.purger(connexion, time.time() - appairages.DUREE)
             limites.ecrire_compteurs(connexion, config.compteurs, time.time())
         except Exception:
             logging.getLogger("relay").exception("entretien")

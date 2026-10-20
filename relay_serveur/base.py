@@ -26,6 +26,13 @@ create table if not exists reveils (
     quand real not null
 );
 create index if not exists reveils_compte on reveils(compte, quand);
+create table if not exists appairages (
+    session text primary key,
+    cle_agent text not null,
+    cle_app text,
+    identite text,
+    cree_le real not null
+);
 create index if not exists comptes_jeton on comptes(jeton_hache);
 create unique index if not exists comptes_transaction on comptes(transaction_origine) where transaction_origine is not null;
 """

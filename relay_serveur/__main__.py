@@ -25,6 +25,7 @@ def entretien(connexion, config):
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    logging.getLogger("httpx").setLevel(logging.WARNING)  # ses lignes INFO portent l'URL APNs, donc le jeton de l'appareil
     config = Config.depuis_env()
     connexion = base.ouvrir(config.base)
     threading.Thread(target=entretien, args=(connexion, config), daemon=True).start()

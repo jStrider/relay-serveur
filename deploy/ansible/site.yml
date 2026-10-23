@@ -109,6 +109,13 @@
         state: started
         daemon_reload: true
 
+    - name: Site (relay-serveur/site)
+      ansible.builtin.copy:
+        src: ../../site/
+        dest: /srv/relay-site/
+        mode: "0644"
+        directory_mode: "0755"
+
     - name: Caddy
       ansible.builtin.template:
         src: Caddyfile.j2

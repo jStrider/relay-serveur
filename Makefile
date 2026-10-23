@@ -21,7 +21,7 @@ infra:
 # Inventaire et variables Ansible depuis les sorties Terraform et .env.
 deploy/ansible/inventory.ini deploy/ansible/vars.yml: deploy/terraform/terraform.tfstate .env
 	@printf "[relay]\nvps ansible_host=%s ansible_user=debian ansible_ssh_private_key_file=~/.ssh/hermes_ed25519\n" "$$($(TF) output -raw host)" > deploy/ansible/inventory.ini
-	@$(TF) output -json | python3 -c 'import json,sys,os; o=json.load(sys.stdin); e=os.environ; v={k: o[k]["value"] for k in ("restic_repository","s3_access_key_id","s3_secret_access_key","nom_public")}; v.update(restic_password=e["RESTIC_PASSWORD"], relay_gratuit=e.get("RELAY_GRATUIT","0")=="1", apns_cle_fichier=os.path.expanduser(e.get("APNS_CLE_FICHIER","")), apns_cle_id=e.get("APNS_CLE_ID",""), apns_equipe=e.get("APNS_EQUIPE",""), apns_bundle=e.get("APNS_BUNDLE",""), apple_app_id=e.get("APPLE_APP_ID","0"), apple_env=e.get("APPLE_ENV","Sandbox")); print(json.dumps(v))' > deploy/ansible/vars.yml
+	@$(TF) output -json | python3 -c 'import json,sys,os; o=json.load(sys.stdin); e=os.environ; v={k: o[k]["value"] for k in ("restic_repository","s3_access_key_id","s3_secret_access_key","nom_public")}; v.update(zone=e["RELAY_ZONE"], restic_password=e["RESTIC_PASSWORD"], relay_gratuit=e.get("RELAY_GRATUIT","0")=="1", apns_cle_fichier=os.path.expanduser(e.get("APNS_CLE_FICHIER","")), apns_cle_id=e.get("APNS_CLE_ID",""), apns_equipe=e.get("APNS_EQUIPE",""), apns_bundle=e.get("APNS_BUNDLE",""), apple_app_id=e.get("APPLE_APP_ID","0"), apple_env=e.get("APPLE_ENV","Sandbox")); print(json.dumps(v))' > deploy/ansible/vars.yml
 	@chmod 600 deploy/ansible/vars.yml
 
 deploy: dist deploy/ansible/inventory.ini deploy/ansible/vars.yml

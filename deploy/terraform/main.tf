@@ -70,3 +70,27 @@ resource "ovh_cloud_project_user_s3_policy" "backups" {
     }]
   })
 }
+
+# Le site (une page statique servie par Caddy sur le même VPS) répond à la racine du domaine et à www.
+# Pas de CNAME possible à la racine : les adresses viennent du VPS.
+data "ovh_vps" "relay" {
+  service_name = ovh_vps.relay.service_name
+}
+
+# Clés connues dès le plan (un VPS neuf n'a pas encore d'adresse) : une entrée par famille d'adresse.
+resource "ovh_domain_zone_record" "site" {
+  for_each  = { A = false, AAAA = true }
+  zone      = var.zone
+  subdomain = ""
+  fieldtype = each.key
+  ttl       = 300
+  target    = one([for ip in data.ovh_vps.relay.ips : ip if strcontains(ip, ":") == each.value && !startswith(ip, "fe80")])
+}
+
+resource "ovh_domain_zone_record" "www" {
+  zone      = var.zone
+  subdomain = "www"
+  fieldtype = "CNAME"
+  ttl       = 300
+  target    = "${var.zone}."
+}

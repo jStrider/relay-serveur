@@ -13,7 +13,6 @@ class Config:
     apns_equipe: str = ""
     apns_bundle: str = ""
     apple_app_id: int = 0
-    apple_env: str = "Sandbox"  # Sandbox ou Production
     apple_racines: str = ""  # dossier des certificats racine Apple
     compteurs: str = ""  # fichier des compteurs d'usage par jour
     hote: str = "127.0.0.1"  # RELAY_HOTE=0.0.0.0 pour un essai depuis un iPhone sur le réseau local, jamais en production (Caddy devant)
@@ -36,7 +35,6 @@ class Config:
             apns_equipe=e.get("APNS_EQUIPE", ""),
             apns_bundle=e.get("APNS_BUNDLE", ""),
             apple_app_id=int(e.get("APPLE_APP_ID", "0") or 0),
-            apple_env=e.get("APPLE_ENV", "Sandbox"),
             apple_racines=e.get("APPLE_RACINES", ""),
             compteurs=e.get("RELAY_COMPTEURS", ""),
             hote=e.get("RELAY_HOTE") or "127.0.0.1",

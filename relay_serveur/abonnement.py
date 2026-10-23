@@ -1,6 +1,8 @@
 """Abonnement : barrière `abonne_requis`, et vérification des transactions App Store (JWS signé par Apple)
-avec la bibliothèque officielle. Une transaction vaut pour un seul compte : son identifiant d'origine est
-gardé avec un index unique, et si l'app a posé un appAccountToken il doit être celui du compte.
+avec la bibliothèque officielle. Une transaction vaut pour un seul compte à la fois : son identifiant d'origine
+est gardé avec un index unique. La première fois qu'elle est présentée, si l'app a posé un appAccountToken, il doit
+être celui du compte ; ensuite, elle passe au compte qui la présente (phrase régénérée, compte supprimé, nouvel
+iPhone : l'identifiant du compte change, l'abonnement le suit, l'ancien compte le perd).
 `RELAY_GRATUIT=1` désactive toute barrière (auto-hébergement)."""
 
 import sqlite3
@@ -49,7 +51,10 @@ class Verificateur(Protocol):
 
 
 class VerificateurApple:
-    """Vérifie la chaîne de signature (racines Apple en local, pas d'appel réseau), le bundle et l'app."""
+    """Vérifie la chaîne de signature (racines Apple en local, pas d'appel réseau), le bundle et l'app.
+    Comme le recommande Apple, en production d'abord, puis en sandbox si l'environnement ne correspond pas
+    (achats TestFlight et du relecteur Apple). Un SignedDataVerifier est lié à un environnement : un par environnement.
+    Sans identifiant App Store (APPLE_APP_ID), que la bibliothèque exige en production, la sandbox seule."""
 
     def __init__(self, config):
         from appstoreserverlibrary.models.Environment import Environment
@@ -58,16 +63,23 @@ class VerificateurApple:
         racines = [p.read_bytes() for p in sorted(Path(config.apple_racines).glob("*.cer"))]
         if not racines:
             raise ValueError(f"aucun certificat racine Apple dans {config.apple_racines!r}")
-        env = Environment.PRODUCTION if config.apple_env.lower() == "production" else Environment.SANDBOX
-        self._verificateur = SignedDataVerifier(racines, False, env, config.apns_bundle, config.apple_app_id or None)
+        envs = [Environment.PRODUCTION, Environment.SANDBOX] if config.apple_app_id else [Environment.SANDBOX]
+        self._verificateurs = [SignedDataVerifier(racines, False, env, config.apns_bundle, config.apple_app_id or None) for env in envs]
 
     def verifier(self, jws: str) -> Transaction:
-        from appstoreserverlibrary.signed_data_verifier import VerificationException
+        from appstoreserverlibrary.signed_data_verifier import VerificationException, VerificationStatus
 
-        try:
-            t = self._verificateur.verify_and_decode_signed_transaction(jws)
-        except (VerificationException, ValueError, TypeError) as e:
-            raise ValueError(f"transaction refusée : {type(e).__name__}") from None
+        for verificateur in self._verificateurs:
+            try:
+                t = verificateur.verify_and_decode_signed_transaction(jws)
+                break
+            except VerificationException as e:
+                if e.status != VerificationStatus.INVALID_ENVIRONMENT:
+                    raise ValueError(f"transaction refusée : {e.status.name}") from None
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"transaction refusée : {type(e).__name__}") from None
+        else:
+            raise ValueError("transaction refusée : environnement inconnu")
         if not t.expiresDate or not t.originalTransactionId:
             raise ValueError("transaction sans expiration ou sans identifiant d'origine")
         return Transaction(expire_le=t.expiresDate / 1000, origine=str(t.originalTransactionId),
@@ -90,6 +102,10 @@ def routeur(verificateur: Verificateur) -> APIRouter:
 
     @r.post("/abonnement")
     def enregistrer_abonnement(corps: dict, request: Request):
+        """Enregistre une transaction App Store pour le compte. 400 signifie seulement un refus définitif
+        (transaction absente ou à la signature invalide, produit ou app inconnus, révoquée, transaction d'un
+        autre compte jamais vue par le relais) : l'app jette alors la transaction. Toute autre erreur (401,
+        429, 5xx, réseau) est passagère : l'app garde la transaction et la représente plus tard."""
         compte = compte_courant(request)
         jws = corps.get("transaction")
         if not isinstance(jws, str) or not jws:
@@ -100,12 +116,13 @@ def routeur(verificateur: Verificateur) -> APIRouter:
             raise HTTPException(400, "transaction invalide")
         if t.revoquee:
             raise HTTPException(400, "transaction révoquée")
-        if t.app_account_token and t.app_account_token.lower() != jeton_de_compte(compte):
-            raise HTTPException(400, "transaction d'un autre compte")
         base = request.app.state.base
-        autre = base.execute("select id from comptes where transaction_origine = ? and id != ?", (t.origine, compte)).fetchone()
-        if autre:
-            raise HTTPException(409, "transaction déjà utilisée par un autre compte")
+        connue = base.execute("select 1 from comptes where transaction_origine = ?", (t.origine,)).fetchone()
+        if not connue and t.app_account_token and t.app_account_token.lower() != jeton_de_compte(compte):
+            raise HTTPException(400, "transaction d'un autre compte")
+        # L'ancien compte d'abord, pour l'index unique ; interrompu entre les deux, l'app représente la transaction.
+        base.execute("update comptes set abonne_jusqu_au = null, transaction_origine = null where transaction_origine = ? and id != ?",
+                     (t.origine, compte))
         base.execute("update comptes set abonne_jusqu_au = ?, transaction_origine = ? where id = ?", (t.expire_le, t.origine, compte))
         return {"abonne_jusqu_au": t.expire_le}
 

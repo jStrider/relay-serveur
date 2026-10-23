@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problèmes connus · Relay</title>
+<link rel="stylesheet" href="style.css">
+<link rel="alternate" hreflang="en" href="https://relay-agent.app/en/known-issues.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="problemes.html" aria-current="page">Problèmes connus</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="conditions.html">Conditions</a>
+      <a href="en/known-issues.html" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Problèmes connus</h1>
+  <p>Rien ici ne te concerne ? Écris à <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>, réponse sous 48 heures. Joins si possible le « Journal des synchros » de l'app, qui ne contient aucune valeur de santé.</p>
+
+  <h2>La séance n'apparaît pas sur la montre</h2>
+  <p>Depuis iOS 18.2, WorkoutKit, le service d'Apple qui envoie les séances à la montre, laisse parfois une séance programmée sur l'iPhone sans jamais l'afficher sur la montre.</p>
+  <ol class="etapes">
+    <li><strong>Ouvre Relay.</strong> L'app programme les séances quand elle est au premier plan, ce qui évite le plus souvent le défaut. Si une séance arrive pendant que l'app est en arrière-plan, elle t'envoie une notification pour te demander de l'ouvrir.</li>
+    <li><strong>Sinon, reprogramme tout.</strong> Dans l'app, Réglages, « Tout reprogrammer sur la montre ». L'app retire puis renvoie toutes les séances : c'est le remède conseillé par Apple.</li>
+  </ol>
+  <p>La montre n'affiche une séance que le jour prévu, dans l'app Exercice. Une séance prévue demain n'y est pas encore aujourd'hui.</p>
+
+  <h2>Le rafraîchissement à la demande ne répond pas</h2>
+  <p>Ton agent demande une synchro, l'iPhone ne répond pas en 25 secondes et <code>relay-agent rafraichir</code> renvoie <code>504</code>. Les causes connues :</p>
+  <ul>
+    <li><strong>L'iPhone est verrouillé.</strong> iOS chiffre les données Santé tant que l'iPhone est verrouillé : aucune app ne peut les lire. Le réveil marche dès que l'iPhone est déverrouillé.</li>
+    <li><strong>Le partage de connexion est actif.</strong> Les notifications silencieuses n'arrivent pas dans ce cas.</li>
+    <li><strong>L'app a été fermée d'un balayage.</strong> iOS ne la relance plus en arrière-plan. Ouvre-la une fois.</li>
+    <li>Apple ne garantit pas la livraison des notifications silencieuses ; iOS les retarde parfois.</li>
+  </ul>
+  <p>Deux réponses normales : si la dernière synchro a moins de deux minutes, le relais ne réveille pas l'iPhone et renvoie les données en place. Au-delà de 6 réveils dans l'heure, il répond <code>429</code>.</p>
+
+  <h2>Certaines données arrivent en retard</h2>
+  <p>iOS réveille Relay dès qu'arrive un repas, une pesée, une nuit de sommeil, une séance, une mesure de VFC ou de fréquence cardiaque au repos. Pour les pas, l'énergie, les minutes d'exercice et l'eau, Apple limite le réveil à une fois par heure au mieux. Le rafraîchissement à la demande comble l'écart.</p>
+
+  <h2>« Abonnement requis »</h2>
+  <p>Le relais répond <code>402</code> et <code>relay-agent</code> sort avec le code 4 quand ton agent planifie une séance ou demande un rafraîchissement sans abonnement actif. Abonne-toi dans l'app, ou utilise « Restaurer un achat » si tu es déjà abonné. Après l'achat, l'app transmet l'abonnement au relais à sa prochaine synchro.</p>
+
+  <h2>« Session inconnue ou expirée » pendant l'appairage</h2>
+  <p>Une session de <code>relay-agent relier</code> vit dix minutes. Relance la commande et saisis la nouvelle session. Si les codes à six chiffres diffèrent entre l'app et l'agent, réponds « Non, ils diffèrent » et recommence : quelqu'un s'est peut-être intercalé.</p>
+
+  <h2>Mon agent n'a pas d'écran pour comparer le code</h2>
+  <p>Utilise la phrase d'appairage : dans l'app, Réglages, « Phrase d'appairage (secours) ». Copie-la dans <code>~/.config/relay/phrase</code>, lisible par toi seul (mode 600), ou dans la variable <code>RELAY_PHRASE</code>.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Accueil</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay est édité par Julien Renaud, développeur indépendant en France.</p>
+  </div>
+</footer>
+</body>
+</html>

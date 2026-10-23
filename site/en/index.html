@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay for Agents: your health and workouts, for your AI agent</title>
+<meta name="description" content="Relay gives your Apple Health data to your own AI agent, end-to-end encrypted, and puts the running workouts it plans on your Apple Watch.">
+<link rel="stylesheet" href="../style.css">
+<link rel="alternate" hreflang="fr" href="https://relay-agent.app/">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="known-issues.html">Known issues</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="../" hreflang="fr" lang="fr">Français</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Your agent plans your intervals. They show up on your Watch.</h1>
+  <p class="accroche">Relay sends your Apple Health data to the AI agent you run yourself, and schedules the running workouts it builds on your Apple Watch. Everything is encrypted on your iPhone before it leaves.</p>
+
+  <div class="actions">
+    <!-- lien App Store à la publication -->
+    <a class="bouton" href="#">Download on the App Store</a>
+    <a class="bouton secondaire" href="#install">Install relay-agent</a>
+  </div>
+
+  <h2>Who it's for</h2>
+  <p>Relay is for you if you have an iPhone, an Apple Watch and your own AI agent: Hermes, OpenClaw, Claude or ChatGPT over MCP, or any agent that can run a command. Your agent does the coaching. Relay carries the data.</p>
+
+  <h2>Three steps</h2>
+  <ol class="etapes">
+    <li><strong>Install.</strong> Install the Relay app on your iPhone and allow it to read Health. On the agent side, install the <code>relay-agent</code> client.</li>
+    <li><strong>Link.</strong> Run <code>relay-agent relier</code>. It prints an eight-character session. Enter it in the app under "Link an agent". The app and the agent show the same six-digit code: check it and confirm.</li>
+    <li><strong>Get your workouts.</strong> Your agent reads your data and plans a workout: warm-up, work and recovery blocks, target paces, cool-down. The app schedules it in the Workout app on your Watch, which shows it on the planned day.</li>
+  </ol>
+  <p>No account, no email, no password. If your agent has no screen to compare a code, the pairing phrase in the app is the fallback.</p>
+
+  <h2>What your agent gets</h2>
+  <ul>
+    <li>Activity: steps, active and resting energy, exercise minutes.</li>
+    <li>Meals: energy, protein, carbs, fat, water.</li>
+    <li>Body: weight, height.</li>
+    <li>Sleep stages, resting heart rate, heart rate variability (HRV).</li>
+    <li>Workouts, with minute-by-minute heart rate and the GPS route for runs, walks, hikes and rides.</li>
+  </ul>
+  <p>For each data type, the agent knows the time of the latest sample and of the last sync, so it knows how fresh its numbers are. It can also ask the iPhone for an immediate sync through a silent notification, as long as the iPhone is unlocked.</p>
+
+  <h2>Encryption, plainly</h2>
+  <p>On first launch, the app generates a 256-bit encryption key. The key stays in your iPhone's keychain and is never sent to the relay. The app encrypts each batch of data with AES-256-GCM, then uploads it. Only your agent, which received the key during pairing, can decrypt it.</p>
+  <div class="encadre">
+    <p>The relay only sees technical data: a random account ID, the type and month of each batch, its size and upload time, the iPhone's notification token and the subscription end date. It sees no health values. Neither does the developer.</p>
+  </div>
+  <p>The relay's code is public (<a href="https://github.com/jStrider/relay-serveur">relay-serveur</a>, AGPL-3.0), and so is the client's (<a href="https://github.com/jStrider/relay-agent">relay-agent</a>, MIT). The relay runs on an OVHcloud server in France. You can also host your own and enter its address in the app's settings.</p>
+
+  <h2 id="install">Install relay-agent</h2>
+  <p>On your agent's machine (Python 3):</p>
+<pre><code>pipx install relay-agent      # or: uv tool install relay-agent
+relay-agent relier</code></pre>
+  <p>The commands use French names (<code>relier</code> means link) and print French messages. Then, depending on your agent:</p>
+  <div class="tableau">
+  <table>
+    <tr><th>Use</th><th>Command</th></tr>
+    <tr><td>Files the agent reads</td><td><code>relay-agent sync --dest ~/relay</code></td></tr>
+    <tr><td>Dated health summary</td><td><code>relay-agent resume --dest ~/relay</code></td></tr>
+    <tr><td>Plan a workout</td><td><code>relay-agent seance ajouter …</code></td></tr>
+    <tr><td>MCP server (Claude, ChatGPT, Cursor)</td><td><code>relay-agent mcp --dest ~/relay</code></td></tr>
+    <tr><td>Sandboxed agent</td><td><code>relay-agent pont --ecoute 172.17.0.1:8771 --dest …</code></td></tr>
+  </table>
+  </div>
+  <p>The bridge (<code>pont</code>) runs on the host with the phrase: the agent's container holds no secret and needs no Internet access. Every command is documented in the <a href="https://github.com/jStrider/relay-agent">relay-agent README</a>.</p>
+
+  <h2>Pricing</h2>
+  <div class="prix">
+    <div>
+      <strong>Reading: free</strong>
+      Your agent reads all your data, with no time limit.
+    </div>
+    <div>
+      <strong>Relay Agent: €4.99 a month or €29.99 a year</strong>
+      Workouts sent to your Watch and on-demand refresh. 14-day free trial, cancel anytime in your Apple settings.
+    </div>
+  </div>
+  <p>The subscription covers the relay hosted by the developer. A relay you host yourself with <code>RELAY_GRATUIT=1</code> needs no subscription.</p>
+
+  <h2>Requirements</h2>
+  <p>An iPhone on iOS 18 or later. An Apple Watch for workouts. An agent that can run a command or speak MCP.</p>
+
+  <h2>Support</h2>
+  <p>Email <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>, reply within 48 hours. Check the <a href="known-issues.html">known issues</a> first: the top one covers workouts that don't reach the Watch.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="known-issues.html">Known issues</a> · <a href="https://github.com/jStrider/relay-serveur">relay-serveur</a> · <a href="https://github.com/jStrider/relay-agent">relay-agent</a></p>
+    <p>Relay is published by Julien Renaud, an independent developer in France. This site uses no cookies and no trackers.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<!-- Projet rédigé à partir du code. À faire relire par un avocat avant la mise en vente. -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité · Relay</title>
+<link rel="stylesheet" href="style.css">
+<link rel="alternate" hreflang="en" href="https://relay-agent.app/en/privacy.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="problemes.html">Problèmes connus</a>
+      <a href="confidentialite.html" aria-current="page">Confidentialité</a>
+      <a href="conditions.html">Conditions</a>
+      <a href="en/privacy.html" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Politique de confidentialité</h1>
+  <p class="date">Version du 23 octobre 2026.</p>
+
+  <div class="encadre">
+    <p>Tes données de santé sont chiffrées sur ton iPhone avec une clé qui n'en sort jamais. Le relais les stocke sans pouvoir les lire, et l'éditeur non plus.</p>
+    <p>Il n'y a ni compte nominatif, ni email, ni publicité, ni mesure d'audience, ni cookie.</p>
+    <p>Tu supprimes tout ce que le relais garde depuis l'app : Réglages, « Supprimer mon compte ».</p>
+  </div>
+
+  <h2>1. Qui est responsable</h2>
+  <p>Le responsable du traitement est Julien Renaud, développeur indépendant, éditeur de Relay.</p>
+  <ul>
+    <li>Adresse : <span class="a-completer">[À COMPLÉTER : adresse postale]</span></li>
+    <li>SIRET : <span class="a-completer">[À COMPLÉTER : SIRET, s'il existe]</span></li>
+    <li>Contact : <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></li>
+  </ul>
+
+  <h2>2. Ce que couvre cette politique</h2>
+  <p>Elle couvre l'app iPhone Relay, le relais hébergé par l'éditeur à l'adresse <code>relay.relay-agent.app</code> et ce site. Elle ne couvre pas ton agent IA ni la machine où tourne <code>relay-agent</code> : c'est toi qui les fais tourner (voir la section 9).</p>
+  <p>Si tu utilises un relais que tu héberges toi-même, l'éditeur ne reçoit aucune de tes données. Seuls l'achat intégré éventuel et cette politique pour l'app restent concernés.</p>
+
+  <h2>3. Tes données de santé</h2>
+  <p>Avec ton autorisation, donnée dans iOS, l'app lit dans Apple Health :</p>
+  <ul>
+    <li>pas, énergie active et au repos, minutes d'exercice ;</li>
+    <li>énergie, protéines, glucides, lipides et eau consommés ;</li>
+    <li>poids et taille ;</li>
+    <li>sommeil par phase, fréquence cardiaque au repos, variabilité cardiaque ;</li>
+    <li>séances d'entraînement, avec la fréquence cardiaque pendant la séance, et pour la course, la marche, la randonnée et le vélo, le tracé GPS.</li>
+  </ul>
+  <p>Ce sont des données concernant la santé, une catégorie particulière au sens de l'article 9 du RGPD. Le tracé GPS révèle aussi des lieux.</p>
+  <p>L'app les chiffre sur ton iPhone avec AES-256-GCM avant tout envoi. La clé de 256 bits est générée sur l'iPhone, gardée dans son trousseau, jamais synchronisée avec iCloud et jamais envoyée au relais. Seuls l'app et les agents que tu as reliés la connaissent.</p>
+
+  <h2>4. Ce que le relais stocke exactement</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Donnée</th><th>Lisible par l'éditeur ?</th></tr>
+    <tr><td>Identifiant de compte : 26 caractères tirés au hasard par l'app</td><td>Oui</td></tr>
+    <tr><td>Empreinte SHA-256 du jeton d'accès (le jeton lui-même n'est pas gardé)</td><td>Oui, l'empreinte seulement</td></tr>
+    <tr><td>Date de création du compte et date de la dernière requête</td><td>Oui</td></tr>
+    <tr><td>Contenu des lots de données (santé, séances, état de la synchro, séances planifiées par ton agent)</td><td><strong>Non</strong>, chiffré de bout en bout</td></tr>
+    <tr><td>Nom de chaque lot (type de donnée et mois, par exemple <code>metriques/step_count/2026-10.json</code> ; pour une séance, sa date et son identifiant), taille et date de dépôt</td><td>Oui</td></tr>
+    <tr><td>Jeton de notification Apple (APNs) de l'iPhone et son environnement</td><td>Oui</td></tr>
+    <tr><td>Abonnement : date de fin et identifiant d'origine de la transaction App Store</td><td>Oui</td></tr>
+    <tr><td>Dates des réveils de l'iPhone demandés par ton agent</td><td>Oui</td></tr>
+    <tr><td>Sessions d'appairage : clés publiques éphémères de l'agent et de l'app, phrase d'appairage chiffrée</td><td>Les clés publiques oui, la phrase non</td></tr>
+  </table>
+  </div>
+  <p>Le lot chiffré « état de la synchro » contient l'heure de la synchro, l'heure du dernier échantillon par type, le nom de l'iPhone et les dernières lignes du journal de l'app. Il n'est lisible que par ton agent.</p>
+  <p>En plus, le serveur traite :</p>
+  <ul>
+    <li><strong>un journal technique</strong> : pour chaque requête, la méthode, le chemin (qui contient le nom du lot), le code de réponse, l'identifiant de compte et la durée. Il ne contient ni corps de requête, ni adresse IP, ni donnée de santé ;</li>
+    <li><strong>ton adresse IP</strong>, en mémoire seulement, pour limiter à dix par heure les créations de compte et les sessions d'appairage depuis une même adresse. Elle n'est jamais écrite sur disque ;</li>
+    <li><strong>des compteurs du jour</strong> : nombre de comptes actifs et de synchros, sans aucun identifiant.</li>
+  </ul>
+
+  <h2>5. Ce que l'éditeur ne peut pas lire</h2>
+  <p>Ni le contenu des lots, ni la clé, ni la phrase d'appairage. Chaque lot est en plus lié à son nom et à ton compte : déplacé ou renommé, il ne se déchiffre plus. Si une autorité exigeait tes données, l'éditeur ne pourrait remettre que ce qui est marqué « Oui » dans le tableau ci-dessus.</p>
+
+  <h2>6. Pourquoi, et sur quelle base</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Finalité</th><th>Base légale</th></tr>
+    <tr><td>Transmettre tes données chiffrées à ton agent, et ses séances à ta montre</td><td>Exécution du service que tu demandes (art. 6.1.b RGPD) ; pour les données de santé, ton consentement explicite (art. 9.2.a), donné en autorisant Santé dans iOS et en reliant un agent</td></tr>
+    <tr><td>Réveiller ton iPhone quand ton agent demande des données fraîches</td><td>Exécution du service (art. 6.1.b)</td></tr>
+    <tr><td>Vérifier ton abonnement</td><td>Exécution du contrat d'abonnement (art. 6.1.b)</td></tr>
+    <tr><td>Protéger le service : limites de débit, quotas, journal technique</td><td>Intérêt légitime de l'éditeur à garder un service sûr et disponible (art. 6.1.f)</td></tr>
+    <tr><td>Sauvegarder la base pour la restaurer après un incident</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
+  </table>
+  </div>
+  <p>Tu retires ton consentement à tout moment : supprime ton compte depuis l'app, ou retire l'autorisation de Relay dans Réglages iOS, Santé.</p>
+  <p>Aucune donnée ne sert à la publicité, au profilage ou à l'entraînement d'un modèle d'IA. Rien n'est vendu.</p>
+
+  <h2>7. Combien de temps</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Donnée</th><th>Durée</th></tr>
+    <tr><td>Lots de données de santé et de séances</td><td>13 mois glissants : à chaque synchro, l'app retire du relais les lots antérieurs au mois en cours moins douze mois</td></tr>
+    <tr><td>État de la synchro et séances planifiées</td><td>Remplacés à chaque dépôt</td></tr>
+    <tr><td>Compte et tout ce qui s'y rattache</td><td>Jusqu'à ce que tu le supprimes, ou effacés automatiquement après 365 jours sans aucune requête de l'app ni de ton agent</td></tr>
+    <tr><td>Sessions d'appairage</td><td>Inutilisables après 10 minutes, effacées à la fin de l'appairage ou dans l'heure qui suit l'expiration</td></tr>
+    <tr><td>Dates des réveils</td><td>Une heure glissante ; les plus anciennes sont effacées au réveil suivant, et toutes avec le compte</td></tr>
+    <tr><td>Adresse IP</td><td>Une heure au plus, en mémoire</td></tr>
+    <tr><td>Journal technique</td><td>30 jours</td></tr>
+    <tr><td>Sauvegardes de la base</td><td>Une par nuit, chiffrées ; on garde les 7 dernières quotidiennes et 4 hebdomadaires. Une donnée effacée disparaît des sauvegardes en cinq semaines environ</td></tr>
+    <tr><td>Sauvegarde automatique du serveur par OVHcloud</td><td>7 jours (les sept dernières sauvegardes quotidiennes)</td></tr>
+  </table>
+  </div>
+  <p>Si l'app ne synchronise plus mais que ton agent continue d'interroger le relais, le compte reste actif et ses lots restent en place, toujours chiffrés. Supprime le compte depuis l'app pour tout effacer.</p>
+
+  <h2>8. Qui reçoit des données</h2>
+  <ul>
+    <li><strong>OVHcloud</strong> (OVH SAS, Roubaix, France) héberge le relais sur un serveur en France et ses sauvegardes dans un stockage objet à Paris. C'est un sous-traitant au sens de l'article 28 du RGPD. Il ne reçoit que ce que stocke le relais : les lots de santé restent chiffrés.</li>
+    <li><strong>Apple</strong> achemine les notifications silencieuses : le relais lui envoie le jeton de ton iPhone et une notification vide, sans aucune donnée. Apple gère aussi l'achat de l'abonnement et son paiement, en tant que responsable de son propre traitement, selon sa politique de confidentialité. Le relais reçoit seulement la transaction signée par Apple, qu'il vérifie localement.</li>
+  </ul>
+  <p>Le relais ne transfère aucune donnée hors de l'Union européenne. Apple peut traiter hors de l'Union les données qu'il gère lui-même, selon ses propres engagements.</p>
+
+  <h2>9. Chez ton agent</h2>
+  <p>Le client <code>relay-agent</code> déchiffre tes données sur la machine que tu choisis, avec la phrase d'appairage. À partir de là, elles sont sous ta responsabilité : l'éditeur n'y a pas accès. Si ton agent les envoie au fournisseur de son modèle (OpenAI, Anthropic, Google ou un autre), ce fournisseur les traite selon ses propres conditions.</p>
+  <p>La phrase d'appairage donne accès à toutes tes données. Garde-la dans un fichier lisible par toi seul : <code>relay-agent</code> refuse de démarrer si d'autres utilisateurs de la machine peuvent la lire. Ne la donne jamais au support.</p>
+
+  <h2>10. Sécurité</h2>
+  <ul>
+    <li>Chiffrement de bout en bout AES-256-GCM ; le transport passe en plus par HTTPS.</li>
+    <li>Jeton d'accès gardé sous forme d'empreinte SHA-256 ; quotas et limites de débit par compte.</li>
+    <li>Serveur accessible en SSH par clé seulement, mises à jour de sécurité automatiques, service isolé du reste du système.</li>
+    <li>Code du relais public, pour que chacun puisse vérifier ce qui précède.</li>
+  </ul>
+
+  <h2>11. Tes droits</h2>
+  <p>Tu as un droit d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, et tu peux définir des directives sur le sort de tes données après ta mort.</p>
+  <ul>
+    <li><strong>Effacement</strong> : dans l'app, Réglages, « Supprimer mon compte ». Le relais efface aussitôt le compte, tous ses lots, les dates de réveil, le jeton de notification et l'état d'abonnement. Les sauvegardes suivent dans les délais de la section 7. Tes données restent dans Santé, sur ton iPhone.</li>
+    <li><strong>Régénérer la phrase</strong> efface l'ancien compte du relais et en crée un nouveau, avec une nouvelle clé.</li>
+    <li><strong>Accès et portabilité</strong> : tes données de santé sont dans Santé sur ton iPhone, et <code>relay-agent sync</code> les écrit en clair sur ta machine. Pour les données techniques de la section 4, écris au support. On te demandera de prouver que le compte est le tien, jamais ta phrase.</li>
+    <li><strong>Abonnement</strong> : il se gère et se résilie dans les réglages de ton compte Apple. Supprimer ton compte Relay ne le résilie pas.</li>
+  </ul>
+  <p>Écris à <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>. Réponse sous un mois au plus. Si tu estimes que tes droits ne sont pas respectés, tu peux saisir la CNIL : <a href="https://www.cnil.fr">www.cnil.fr</a>, 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.</p>
+
+  <h2>12. Cookies et traceurs</h2>
+  <p>Ni ce site ni l'app n'utilisent de cookie, de traceur, de pixel ou d'outil de mesure d'audience. Ce site ne charge aucune ressource externe.</p>
+
+  <h2>13. Âge</h2>
+  <p>Relay n'est pas destiné aux personnes de moins de 15 ans.</p>
+
+  <h2>14. Changements</h2>
+  <p>Si cette politique change, la nouvelle version est publiée ici avec sa date.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Accueil</a> · <a href="conditions.html">Conditions</a> · <a href="problemes.html">Problèmes connus</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay est édité par Julien Renaud, développeur indépendant en France.</p>
+  </div>
+</footer>
+</body>
+</html>

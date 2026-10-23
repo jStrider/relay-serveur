@@ -26,7 +26,12 @@ variable "vps_image_id" {
 }
 
 variable "vps_datacenter" {
-  description = "GRA (Gravelines) ou SBG (Strasbourg) pour des données en France ; UK si le stock manque."
+  description = "GRA (Gravelines) ou SBG (Strasbourg) : les données de santé chiffrées restent en France (politique de confidentialité)."
   type        = string
   default     = "GRA"
+
+  validation {
+    condition     = contains(["GRA", "SBG"], var.vps_datacenter)
+    error_message = "Centre de données en France seulement : GRA ou SBG."
+  }
 }

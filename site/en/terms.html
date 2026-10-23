@@ -1,0 +1,93 @@
+<!doctype html>
+<!-- Projet rédigé à partir du code. À faire relire par un avocat avant la mise en vente. La version française fait foi. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of use · Relay</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="alternate" hreflang="fr" href="https://relay-agent.app/conditions.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="known-issues.html">Known issues</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html" aria-current="page">Terms</a>
+      <a href="../conditions.html" hreflang="fr" lang="fr">Français</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Terms of use</h1>
+  <p class="date">Version of 23 October 2026. If this translation and the <a href="../conditions.html">French version</a> differ, the French version prevails.</p>
+
+  <h2>1. Purpose</h2>
+  <p>These terms govern the use of the Relay iPhone app and of the relay hosted by the developer. By using Relay, you accept them. They add to Apple's standard licensed application end user license agreement (EULA), which also applies.</p>
+
+  <h2>2. Publisher</h2>
+  <p>Julien Renaud, independent developer in France.<br>
+  Address: <span class="a-completer">[À COMPLÉTER : adresse postale]</span><br>
+  SIRET: <span class="a-completer">[À COMPLÉTER : SIRET, s'il existe]</span><br>
+  Contact: <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+
+  <h2>3. The service</h2>
+  <p>Relay reads your Apple Health data, encrypts it on your iPhone and uploads it to a relay. Your AI agent fetches and decrypts it with the <code>relay-agent</code> client. In the other direction, your agent uploads running workouts that the app schedules on your Apple Watch, and it can ask the iPhone for an immediate sync.</p>
+  <p>You need an iPhone on iOS 18 or later, an Apple Watch for workouts, and an agent you run yourself. The developer provides no agent and no AI model, and is not responsible for what your agent does with your data or for the workouts it suggests.</p>
+  <p>The relay's code is published under the AGPL-3.0 license and <code>relay-agent</code>'s under the MIT license. Those licenses govern the use of that code. These terms govern the app and the relay hosted by the developer.</p>
+
+  <h2>4. No named account</h2>
+  <p>Relay asks for no email and no password. Your access lives in the pairing phrase, kept in your iPhone's keychain and on your agent's machine. Keep it secret: anyone who holds it can read your data. The developer can neither recover nor reset it. If you lose it, regenerate it in the app and link your agent again; your Health data stays on your iPhone.</p>
+
+  <h2>5. Free use and subscription</h2>
+  <p>Your agent reading your data is free. The "Relay Agent" subscription adds workouts sent to your Watch and on-demand refresh.</p>
+  <ul>
+    <li>Price in France: €4.99 a month or €29.99 a year, VAT included. The price shown in the App Store at purchase applies; it may vary by country.</li>
+    <li>14-day free trial, offered once per Apple Account under App Store rules.</li>
+    <li>Apple charges your Apple Account when you confirm the purchase, or when the trial ends.</li>
+    <li>The subscription renews automatically for the same period unless you cancel it at least 24 hours before the current period ends.</li>
+    <li>You manage and cancel it in your Apple Account settings (Settings, your name, Subscriptions). Cancellation takes effect at the end of the paid period.</li>
+    <li>Refunds are handled by Apple, at <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</li>
+    <li>Deleting your Relay account or regenerating the phrase does not cancel the Apple subscription.</li>
+  </ul>
+  <p>The subscription covers the relay hosted by the developer. A relay you host yourself with <code>RELAY_GRATUIT=1</code> needs no subscription.</p>
+
+  <h2>6. Not a medical device</h2>
+  <p><strong>Relay is not a medical device and gives no medical advice.</strong> It carries data and workouts; it does not interpret them. Workouts come from your agent, not from the developer. Before starting or stepping up training, ask a doctor if you have any doubt about your health. Stop if you feel pain, faintness or unusual breathlessness.</p>
+
+  <h2>7. What you agree to</h2>
+  <ul>
+    <li>Use Relay only for your own data.</li>
+    <li>Not try to access someone else's account, bypass the relay's limits or overload it.</li>
+    <li>Stay within the quotas: 1,000 batches and 200 MB per account, 1 MB per batch, 600 requests per minute and 6 iPhone wake-ups per hour.</li>
+  </ul>
+
+  <h2>8. Availability</h2>
+  <p>The developer does his best to keep the relay available, with no guarantee of result or timing. The service may stop for maintenance or an incident. Some limits are outside his control: iOS does not allow reading Health while the iPhone is locked, Apple does not guarantee delivery of silent notifications, and WorkoutKit has a known defect that sometimes holds back workouts (see <a href="known-issues.html">known issues</a>).</p>
+  <p>The relay is a 13-month buffer, not an archive. Keep your copy on your agent's side: <code>relay-agent sync</code> never deletes what it has already written.</p>
+
+  <h2>9. Liability</h2>
+  <p>The developer is liable for direct damage caused by a breach of these terms. He is not liable for damage caused by your agent, by its model provider, by a workout your agent planned, by the loss of your pairing phrase, or by an outage at Apple or OVHcloud. Nothing in these terms limits your consumer rights or the developer's liability for gross negligence or for personal injury caused by his fault.</p>
+
+  <h2>10. Ending the service</h2>
+  <p>You can stop whenever you like: delete your account in the app (Settings, "Delete my account"), then cancel the subscription with Apple. An account with no request for 365 days is erased automatically.</p>
+  <p>The developer may suspend an account that breaches section 7. If he shuts the service down, he will announce it on this site at least 30 days ahead, and both the app and <code>relay-agent</code> keep working with a self-hosted relay.</p>
+
+  <h2>11. Changes</h2>
+  <p>These terms may change. The new version is published here with its date. A change affecting the subscription does not apply to a period already paid.</p>
+
+  <h2>12. Governing law and disputes</h2>
+  <p>These terms are governed by French law. In a dispute, email support first to look for an amicable solution. You can also use a consumer mediator free of charge: <span class="a-completer">[À COMPLÉTER : nom et adresse du médiateur de la consommation choisi]</span>. Failing that, the French courts have jurisdiction, without prejudice to the rules that protect you as a consumer in your country.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Home</a> · <a href="privacy.html">Privacy</a> · <a href="known-issues.html">Known issues</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay is published by Julien Renaud, an independent developer in France.</p>
+  </div>
+</footer>
+</body>
+</html>

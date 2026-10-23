@@ -1,0 +1,161 @@
+<!doctype html>
+<!-- Projet rédigé à partir du code. À faire relire par un avocat avant la mise en vente. La version française fait foi. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy · Relay</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="alternate" hreflang="fr" href="https://relay-agent.app/confidentialite.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="known-issues.html">Known issues</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="../confidentialite.html" hreflang="fr" lang="fr">Français</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Privacy policy</h1>
+  <p class="date">Version of 23 October 2026. If this translation and the <a href="../confidentialite.html">French version</a> differ, the French version prevails.</p>
+
+  <div class="encadre">
+    <p>Your health data is encrypted on your iPhone with a key that never leaves it. The relay stores it without being able to read it, and so does the developer.</p>
+    <p>There is no named account, no email, no advertising, no analytics and no cookies.</p>
+    <p>You delete everything the relay keeps from the app: Settings, "Delete my account".</p>
+  </div>
+
+  <h2>1. Who is responsible</h2>
+  <p>The data controller is Julien Renaud, independent developer and publisher of Relay.</p>
+  <ul>
+    <li>Address: <span class="a-completer">[À COMPLÉTER : adresse postale]</span></li>
+    <li>SIRET: <span class="a-completer">[À COMPLÉTER : SIRET, s'il existe]</span></li>
+    <li>Contact: <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></li>
+  </ul>
+
+  <h2>2. What this policy covers</h2>
+  <p>It covers the Relay iPhone app, the relay hosted by the developer at <code>relay.relay-agent.app</code>, and this website. It does not cover your AI agent or the machine running <code>relay-agent</code>: you run those yourself (see section 9).</p>
+  <p>If you use a relay you host yourself, the developer receives none of your data. Only a possible in-app purchase and this policy for the app still apply.</p>
+
+  <h2>3. Your health data</h2>
+  <p>With the permission you grant in iOS, the app reads from Apple Health:</p>
+  <ul>
+    <li>steps, active and resting energy, exercise minutes;</li>
+    <li>dietary energy, protein, carbohydrates, fat and water;</li>
+    <li>weight and height;</li>
+    <li>sleep stages, resting heart rate, heart rate variability;</li>
+    <li>workouts, with heart rate during the workout and, for runs, walks, hikes and rides, the GPS route.</li>
+  </ul>
+  <p>This is data concerning health, a special category under Article 9 of the GDPR. GPS routes also reveal places.</p>
+  <p>The app encrypts it on your iPhone with AES-256-GCM before sending anything. The 256-bit key is generated on the iPhone, kept in its keychain, never synced to iCloud and never sent to the relay. Only the app and the agents you have linked know it.</p>
+
+  <h2>4. Exactly what the relay stores</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Data</th><th>Readable by the developer?</th></tr>
+    <tr><td>Account ID: 26 characters picked at random by the app</td><td>Yes</td></tr>
+    <tr><td>SHA-256 hash of the access token (the token itself is not kept)</td><td>Yes, the hash only</td></tr>
+    <tr><td>Account creation date and date of the last request</td><td>Yes</td></tr>
+    <tr><td>Content of the data batches (health, workouts, sync status, workouts planned by your agent)</td><td><strong>No</strong>, end-to-end encrypted</td></tr>
+    <tr><td>Name of each batch (data type and month, for example <code>metriques/step_count/2026-10.json</code>; for a workout, its date and ID), size and upload time</td><td>Yes</td></tr>
+    <tr><td>The iPhone's Apple notification token (APNs) and its environment</td><td>Yes</td></tr>
+    <tr><td>Subscription: end date and original App Store transaction ID</td><td>Yes</td></tr>
+    <tr><td>Times of the iPhone wake-ups requested by your agent</td><td>Yes</td></tr>
+    <tr><td>Pairing sessions: ephemeral public keys of the agent and the app, encrypted pairing phrase</td><td>Public keys yes, the phrase no</td></tr>
+  </table>
+  </div>
+  <p>The encrypted "sync status" batch holds the sync time, the latest sample time per type, the iPhone's name and the last lines of the app's log. Only your agent can read it.</p>
+  <p>The server also processes:</p>
+  <ul>
+    <li><strong>a technical log</strong>: for each request, the method, the path (which contains the batch name), the response code, the account ID and the duration. It holds no request body, no IP address and no health data;</li>
+    <li><strong>your IP address</strong>, in memory only, to cap account creations and pairing sessions at ten per hour from one address. It is never written to disk;</li>
+    <li><strong>daily counters</strong>: number of active accounts and syncs, with no identifier.</li>
+  </ul>
+
+  <h2>5. What the developer cannot read</h2>
+  <p>The content of the batches, the key and the pairing phrase. Each batch is also bound to its name and to your account: moved or renamed, it no longer decrypts. If an authority demanded your data, the developer could only hand over what is marked "Yes" in the table above.</p>
+
+  <h2>6. Why, and on what legal basis</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Purpose</th><th>Legal basis</th></tr>
+    <tr><td>Pass your encrypted data to your agent, and its workouts to your Watch</td><td>Performance of the service you request (Art. 6(1)(b) GDPR); for health data, your explicit consent (Art. 9(2)(a)), given by allowing Health access in iOS and linking an agent</td></tr>
+    <tr><td>Wake your iPhone when your agent asks for fresh data</td><td>Performance of the service (Art. 6(1)(b))</td></tr>
+    <tr><td>Check your subscription</td><td>Performance of the subscription contract (Art. 6(1)(b))</td></tr>
+    <tr><td>Protect the service: rate limits, quotas, technical log</td><td>The developer's legitimate interest in a safe and available service (Art. 6(1)(f))</td></tr>
+    <tr><td>Back up the database to restore it after an incident</td><td>Legitimate interest (Art. 6(1)(f))</td></tr>
+  </table>
+  </div>
+  <p>You can withdraw consent at any time: delete your account from the app, or remove Relay's access in iOS Settings, Health.</p>
+  <p>No data is used for advertising, profiling or training an AI model. Nothing is sold.</p>
+
+  <h2>7. How long</h2>
+  <div class="tableau">
+  <table>
+    <tr><th>Data</th><th>Retention</th></tr>
+    <tr><td>Health and workout batches</td><td>13 rolling months: at each sync, the app removes from the relay the batches older than the current month minus twelve months</td></tr>
+    <tr><td>Sync status and planned workouts</td><td>Replaced at each upload</td></tr>
+    <tr><td>The account and everything attached to it</td><td>Until you delete it, or erased automatically after 365 days without any request from the app or your agent</td></tr>
+    <tr><td>Pairing sessions</td><td>Unusable after 10 minutes, erased when pairing ends or within the hour after expiry</td></tr>
+    <tr><td>Wake-up times</td><td>A rolling hour; older ones are erased at the next wake-up, and all of them with the account</td></tr>
+    <tr><td>IP address</td><td>One hour at most, in memory</td></tr>
+    <tr><td>Technical log</td><td>30 days</td></tr>
+    <tr><td>Database backups</td><td>One per night, encrypted; the last 7 daily and 4 weekly backups are kept. Erased data leaves the backups within about five weeks</td></tr>
+    <tr><td>OVHcloud's automatic server backup</td><td>7 days (the last seven daily backups)</td></tr>
+  </table>
+  </div>
+  <p>If the app stops syncing but your agent keeps querying the relay, the account stays active and its batches stay in place, still encrypted. Delete the account from the app to erase everything.</p>
+
+  <h2>8. Who receives data</h2>
+  <ul>
+    <li><strong>OVHcloud</strong> (OVH SAS, Roubaix, France) hosts the relay on a server in France and its backups in object storage in Paris. It is a processor under Article 28 of the GDPR. It only receives what the relay stores: health batches stay encrypted.</li>
+    <li><strong>Apple</strong> delivers the silent notifications: the relay sends it your iPhone's token and an empty notification, with no data. Apple also handles the subscription purchase and payment, as controller of its own processing, under its own privacy policy. The relay only receives the transaction signed by Apple, which it verifies locally.</li>
+  </ul>
+  <p>The relay transfers no data outside the European Union. Apple may process the data it handles itself outside the Union, under its own commitments.</p>
+
+  <h2>9. On your agent's side</h2>
+  <p>The <code>relay-agent</code> client decrypts your data on the machine you choose, with the pairing phrase. From then on, the data is your responsibility: the developer has no access to it. If your agent sends it to its model provider (OpenAI, Anthropic, Google or another), that provider processes it under its own terms.</p>
+  <p>The pairing phrase gives access to all your data. Keep it in a file only you can read: <code>relay-agent</code> refuses to start if other users on the machine can read it. Never give it to support.</p>
+
+  <h2>10. Security</h2>
+  <ul>
+    <li>AES-256-GCM end-to-end encryption; transport also goes over HTTPS.</li>
+    <li>Access token kept as a SHA-256 hash; quotas and rate limits per account.</li>
+    <li>Server reachable over SSH by key only, automatic security updates, service isolated from the rest of the system.</li>
+    <li>Public relay code, so anyone can check the above.</li>
+  </ul>
+
+  <h2>11. Your rights</h2>
+  <p>You have the right of access, rectification, erasure, restriction, portability and objection, and you can set instructions for what happens to your data after your death.</p>
+  <ul>
+    <li><strong>Erasure</strong>: in the app, Settings, "Delete my account". The relay immediately erases the account, all its batches, wake-up times, notification token and subscription status. Backups follow within the periods in section 7. Your data stays in Health, on your iPhone.</li>
+    <li><strong>Regenerating the phrase</strong> erases the old account from the relay and creates a new one, with a new key.</li>
+    <li><strong>Access and portability</strong>: your health data is in Health on your iPhone, and <code>relay-agent sync</code> writes it in clear on your machine. For the technical data in section 4, email support. We will ask you to prove the account is yours, never for your phrase.</li>
+    <li><strong>Subscription</strong>: you manage and cancel it in your Apple account settings. Deleting your Relay account does not cancel it.</li>
+  </ul>
+  <p>Email <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>. Reply within one month at most. If you think your rights are not respected, you can complain to the CNIL, the French data protection authority: <a href="https://www.cnil.fr">www.cnil.fr</a>, 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, France, or to the authority of your country.</p>
+
+  <h2>12. Cookies and trackers</h2>
+  <p>Neither this site nor the app uses cookies, trackers, pixels or analytics. This site loads no external resources.</p>
+
+  <h2>13. Age</h2>
+  <p>Relay is not intended for people under 15.</p>
+
+  <h2>14. Changes</h2>
+  <p>If this policy changes, the new version is published here with its date.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Home</a> · <a href="terms.html">Terms</a> · <a href="known-issues.html">Known issues</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay is published by Julien Renaud, an independent developer in France.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<!-- Projet rédigé à partir du code. À faire relire par un avocat avant la mise en vente. -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conditions d'utilisation · Relay</title>
+<link rel="stylesheet" href="style.css">
+<link rel="alternate" hreflang="en" href="https://relay-agent.app/en/terms.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="problemes.html">Problèmes connus</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="conditions.html" aria-current="page">Conditions</a>
+      <a href="en/terms.html" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Conditions d'utilisation</h1>
+  <p class="date">Version du 23 octobre 2026.</p>
+
+  <h2>1. Objet</h2>
+  <p>Ces conditions encadrent l'utilisation de l'app iPhone Relay et du relais hébergé par l'éditeur. En utilisant Relay, tu les acceptes. Elles complètent le contrat de licence standard d'Apple pour les apps (EULA), qui s'applique aussi.</p>
+
+  <h2>2. Éditeur</h2>
+  <p>Julien Renaud, développeur indépendant en France.<br>
+  Adresse : <span class="a-completer">[À COMPLÉTER : adresse postale]</span><br>
+  SIRET : <span class="a-completer">[À COMPLÉTER : SIRET, s'il existe]</span><br>
+  Contact : <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+
+  <h2>3. Le service</h2>
+  <p>Relay lit tes données Apple Health, les chiffre sur ton iPhone et les dépose sur un relais. Ton agent IA les récupère et les déchiffre avec le client <code>relay-agent</code>. Dans l'autre sens, ton agent dépose des séances de course que l'app programme sur ton Apple Watch, et il peut demander une synchro immédiate de l'iPhone.</p>
+  <p>Il te faut un iPhone sous iOS 18 ou plus récent, une Apple Watch pour les séances, et un agent que tu fais tourner toi-même. L'éditeur ne fournit pas d'agent ni de modèle d'IA, et ne répond pas de ce que ton agent fait de tes données ou des séances qu'il propose.</p>
+  <p>Le code du relais est publié sous licence AGPL-3.0 et celui de <code>relay-agent</code> sous licence MIT. Ces licences régissent l'usage de ce code. Les présentes conditions régissent l'app et le relais hébergé par l'éditeur.</p>
+
+  <h2>4. Sans compte nominatif</h2>
+  <p>Relay ne demande ni email ni mot de passe. Ton accès tient dans la phrase d'appairage, gardée dans le trousseau de ton iPhone et chez ton agent. Garde-la secrète : quiconque la détient lit tes données. L'éditeur ne peut ni la retrouver ni la réinitialiser. Si tu la perds, régénère-la depuis l'app et relie ton agent à nouveau ; tes données Santé, elles, restent sur ton iPhone.</p>
+
+  <h2>5. Gratuit et abonnement</h2>
+  <p>La lecture de tes données par ton agent est gratuite. L'abonnement « Relay Agent » ajoute les séances envoyées sur la montre et le rafraîchissement à la demande.</p>
+  <ul>
+    <li>Prix en France : 4,99 € par mois ou 29,99 € par an, TTC. Le prix affiché dans l'App Store au moment de l'achat fait foi ; il peut varier selon le pays.</li>
+    <li>Essai gratuit de 14 jours, offert une seule fois par compte Apple selon les règles de l'App Store.</li>
+    <li>Apple encaisse le paiement sur ton compte Apple à la confirmation de l'achat, ou à la fin de l'essai.</li>
+    <li>L'abonnement se renouvelle automatiquement pour la même durée, sauf si tu le résilies au moins 24 heures avant la fin de la période en cours.</li>
+    <li>Tu le gères et le résilies dans les réglages de ton compte Apple (Réglages, ton nom, Abonnements). La résiliation prend effet à la fin de la période payée.</li>
+    <li>Les remboursements relèvent d'Apple, sur <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</li>
+    <li>Supprimer ton compte Relay ou régénérer la phrase ne résilie pas l'abonnement Apple.</li>
+  </ul>
+  <p>L'abonnement porte sur le relais hébergé par l'éditeur. Un relais que tu héberges toi-même avec <code>RELAY_GRATUIT=1</code> ne demande aucun abonnement.</p>
+
+  <h2>6. Pas un dispositif médical</h2>
+  <p><strong>Relay n'est pas un dispositif médical et ne donne aucun avis médical.</strong> Il transporte des données et des séances ; il ne les interprète pas. Les séances viennent de ton agent, pas de l'éditeur. Avant de commencer ou d'intensifier un entraînement, demande l'avis d'un médecin si tu as le moindre doute sur ta santé. Arrête-toi en cas de douleur, de malaise ou d'essoufflement inhabituel.</p>
+
+  <h2>7. Ce que tu t'engages à faire</h2>
+  <ul>
+    <li>N'utiliser Relay que pour tes propres données.</li>
+    <li>Ne pas chercher à accéder au compte d'un autre, à contourner les limites du relais ou à le surcharger.</li>
+    <li>Respecter les quotas : 1 000 lots et 200 Mo par compte, 1 Mo par lot, 600 requêtes par minute et 6 réveils de l'iPhone par heure.</li>
+  </ul>
+
+  <h2>8. Disponibilité</h2>
+  <p>L'éditeur fait de son mieux pour que le relais reste disponible, sans garantie de résultat ni de délai. Le service peut s'interrompre pour une maintenance ou un incident. Certaines limites ne dépendent pas de lui : iOS ne laisse pas lire Santé quand l'iPhone est verrouillé, Apple ne garantit pas la livraison des notifications silencieuses, et WorkoutKit a un défaut connu qui retient parfois les séances (voir les <a href="problemes.html">problèmes connus</a>).</p>
+  <p>Le relais est un tampon de 13 mois, pas une archive. Garde ta copie chez ton agent : <code>relay-agent sync</code> n'efface jamais ce qu'il a déjà écrit.</p>
+
+  <h2>9. Responsabilité</h2>
+  <p>L'éditeur répond des dommages directs causés par un manquement à ces conditions. Il ne répond pas des dommages causés par ton agent, par le fournisseur de son modèle, par une séance planifiée par ton agent, par la perte de ta phrase d'appairage, ni par une indisponibilité d'Apple ou d'OVHcloud. Rien dans ces conditions ne limite tes droits de consommateur ni la responsabilité de l'éditeur en cas de faute lourde ou de dommage corporel causé par sa faute.</p>
+
+  <h2>10. Fin du service</h2>
+  <p>Tu peux arrêter quand tu veux : supprime ton compte dans l'app (Réglages, « Supprimer mon compte »), puis résilie l'abonnement chez Apple. Un compte sans aucune requête pendant 365 jours est effacé automatiquement.</p>
+  <p>L'éditeur peut suspendre un compte qui enfreint la section 7. S'il arrête le service, il prévient sur ce site au moins 30 jours avant, et l'app comme <code>relay-agent</code> restent utilisables avec un relais auto-hébergé.</p>
+
+  <h2>11. Changements</h2>
+  <p>Ces conditions peuvent évoluer. La nouvelle version est publiée ici avec sa date. Un changement qui touche l'abonnement ne s'applique pas à la période déjà payée.</p>
+
+  <h2>12. Droit applicable et litiges</h2>
+  <p>Ces conditions sont soumises au droit français. En cas de litige, écris d'abord au support pour chercher une solution amiable. Tu peux aussi recourir gratuitement à un médiateur de la consommation : <span class="a-completer">[À COMPLÉTER : nom et adresse du médiateur de la consommation choisi]</span>. À défaut, les tribunaux français sont compétents, sans préjudice des règles qui te protègent en tant que consommateur.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Accueil</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="problemes.html">Problèmes connus</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay est édité par Julien Renaud, développeur indépendant en France.</p>
+  </div>
+</footer>
+</body>
+</html>

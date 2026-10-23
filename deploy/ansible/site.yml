@@ -9,6 +9,21 @@
         name: [python3, python3-venv, python3-pip, sqlite3, caddy, restic, fail2ban, unattended-upgrades]
         update_cache: true
 
+    - name: Dossier de configuration de journald
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: Journal système gardé 30 jours (durée annoncée dans la politique de confidentialité)
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/relay.conf
+        content: |
+          [Journal]
+          MaxRetentionSec=30day
+        mode: "0644"
+      notify: Restart journald
+
     - name: SSH par clé uniquement
       ansible.builtin.copy:
         dest: /etc/ssh/sshd_config.d/10-hardening.conf
@@ -151,6 +166,11 @@
       notify: Activer le timer de sauvegarde
 
   handlers:
+    - name: Restart journald
+      ansible.builtin.systemd_service:
+        name: systemd-journald
+        state: restarted
+
     - name: Reload sshd
       ansible.builtin.service:
         name: ssh

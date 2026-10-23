@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay pour agents : ta santé et tes séances, pour ton agent IA</title>
+<meta name="description" content="Relay donne tes données Apple Health à ton propre agent IA, chiffrées de bout en bout, et envoie sur ton Apple Watch les séances de course qu'il planifie.">
+<link rel="stylesheet" href="style.css">
+<link rel="alternate" hreflang="en" href="https://relay-agent.app/en/">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="problemes.html">Problèmes connus</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="conditions.html">Conditions</a>
+      <a href="en/" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Ton agent planifie ton fractionné, il apparaît sur ta montre</h1>
+  <p class="accroche">Relay transmet tes données Apple Health à l'agent IA que tu fais tourner toi-même, et programme sur ton Apple Watch les séances de course qu'il prépare. Tout est chiffré sur ton iPhone avant de partir.</p>
+
+  <div class="actions">
+    <!-- lien App Store à la publication -->
+    <a class="bouton" href="#">Télécharger sur l'App Store</a>
+    <a class="bouton secondaire" href="#installer">Installer relay-agent</a>
+  </div>
+
+  <h2>À qui ça sert</h2>
+  <p>Relay est fait pour toi si tu as un iPhone, une Apple Watch et ton propre agent IA : Hermes, OpenClaw, Claude ou ChatGPT par MCP, ou n'importe quel agent qui sait lancer une commande. Ton agent coache, Relay transporte.</p>
+
+  <h2>Trois étapes</h2>
+  <ol class="etapes">
+    <li><strong>Installer.</strong> Installe l'app Relay sur ton iPhone et autorise la lecture de Santé. Côté agent, installe le client <code>relay-agent</code>.</li>
+    <li><strong>Relier.</strong> Lance <code>relay-agent relier</code> : il affiche une session de huit caractères. Saisis-la dans l'app, écran « Relier un agent ». L'app et l'agent affichent le même code à six chiffres : tu vérifies et tu confirmes.</li>
+    <li><strong>Recevoir les séances.</strong> Ton agent lit tes données et planifie une séance : échauffement, blocs d'effort et de récupération, allures cibles, retour au calme. L'app la programme dans l'app Exercice de ta montre, qui l'affiche le jour prévu.</li>
+  </ol>
+  <p>Pas de compte, pas d'email, pas de mot de passe. Si l'agent n'a pas d'écran pour comparer un code, la phrase d'appairage de l'app sert de secours.</p>
+
+  <h2>Ce que ton agent reçoit</h2>
+  <ul>
+    <li>Activité : pas, énergie active et au repos, minutes d'exercice.</li>
+    <li>Repas : énergie, protéines, glucides, lipides, eau.</li>
+    <li>Corps : poids, taille.</li>
+    <li>Sommeil par phase, fréquence cardiaque au repos, variabilité cardiaque (VFC).</li>
+    <li>Séances, avec la fréquence cardiaque minute par minute et le tracé GPS pour la course, la marche, la randonnée et le vélo.</li>
+  </ul>
+  <p>Pour chaque type de donnée, l'agent connaît l'heure du dernier échantillon et celle de la dernière synchro : il sait si ses chiffres sont frais. Il peut aussi demander à l'iPhone une synchro immédiate, par une notification silencieuse, quand l'iPhone est déverrouillé.</p>
+
+  <h2>Le chiffrement, simplement</h2>
+  <p>À la première ouverture, l'app tire une clé de chiffrement de 256 bits. Cette clé reste dans le trousseau de ton iPhone et n'est jamais envoyée au relais. L'app chiffre chaque lot de données avec AES-256-GCM, puis le dépose sur le relais. Seul ton agent, à qui tu as transmis la clé pendant l'appairage, peut le déchiffrer.</p>
+  <div class="encadre">
+    <p>Le relais ne voit que des données techniques : un identifiant de compte tiré au hasard, le type et le mois de chaque lot, sa taille, ses dates de dépôt, le jeton de notification de l'iPhone et la date de fin d'abonnement. Il ne voit aucune valeur de santé. L'éditeur non plus.</p>
+  </div>
+  <p>Le code du relais est public (<a href="https://github.com/jStrider/relay-serveur">relay-serveur</a>, licence AGPL-3.0), comme celui du client (<a href="https://github.com/jStrider/relay-agent">relay-agent</a>, licence MIT). Le relais tourne sur un serveur OVHcloud en France. Tu peux aussi héberger le tien et saisir son adresse dans les réglages de l'app.</p>
+
+  <h2 id="installer">Installer relay-agent</h2>
+  <p>Sur la machine de ton agent (Python 3) :</p>
+<pre><code>pipx install relay-agent      # ou : uv tool install relay-agent
+relay-agent relier</code></pre>
+  <p>Ensuite, selon ton agent :</p>
+  <div class="tableau">
+  <table>
+    <tr><th>Usage</th><th>Commande</th></tr>
+    <tr><td>Fichiers lus par l'agent</td><td><code>relay-agent sync --dest ~/relay</code></td></tr>
+    <tr><td>Résumé santé daté</td><td><code>relay-agent resume --dest ~/relay</code></td></tr>
+    <tr><td>Planifier une séance</td><td><code>relay-agent seance ajouter …</code></td></tr>
+    <tr><td>Serveur MCP (Claude, ChatGPT, Cursor)</td><td><code>relay-agent mcp --dest ~/relay</code></td></tr>
+    <tr><td>Agent en bac à sable</td><td><code>relay-agent pont --ecoute 172.17.0.1:8771 --dest …</code></td></tr>
+  </table>
+  </div>
+  <p>Le pont tourne sur l'hôte avec la phrase : le conteneur de l'agent n'a aucun secret et n'a pas besoin d'accès à Internet. Le détail de chaque commande est dans le <a href="https://github.com/jStrider/relay-agent">README de relay-agent</a>.</p>
+
+  <h2>Prix</h2>
+  <div class="prix">
+    <div>
+      <strong>Lecture : gratuite</strong>
+      Ton agent lit toutes tes données, sans limite de durée.
+    </div>
+    <div>
+      <strong>Relay Agent : 4,99 € par mois ou 29,99 € par an</strong>
+      Les séances envoyées sur la montre et le rafraîchissement à la demande. 14 jours d'essai, résiliable à tout moment dans les réglages Apple.
+    </div>
+  </div>
+  <p>L'abonnement porte sur le relais hébergé par l'éditeur. Un relais que tu héberges toi-même avec <code>RELAY_GRATUIT=1</code> ne demande aucun abonnement.</p>
+
+  <h2>Configuration requise</h2>
+  <p>Un iPhone sous iOS 18 ou plus récent. Une Apple Watch pour les séances. Un agent qui peut lancer une commande ou parler MCP.</p>
+
+  <h2>Support</h2>
+  <p>Écris à <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>, réponse sous 48 heures. Avant, jette un œil aux <a href="problemes.html">problèmes connus</a> : le premier concerne les séances qui n'arrivent pas sur la montre.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions</a> · <a href="problemes.html">Problèmes connus</a> · <a href="https://github.com/jStrider/relay-serveur">relay-serveur</a> · <a href="https://github.com/jStrider/relay-agent">relay-agent</a></p>
+    <p>Relay est édité par Julien Renaud, développeur indépendant en France. Ce site n'utilise ni cookie ni traceur.</p>
+  </div>
+</footer>
+</body>
+</html>

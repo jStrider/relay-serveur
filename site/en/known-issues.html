@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Known issues · Relay</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="alternate" hreflang="fr" href="https://relay-agent.app/problemes.html">
+</head>
+<body>
+<header class="haut">
+  <div class="page">
+    <a class="marque" href="./">Relay</a>
+    <nav>
+      <a href="known-issues.html" aria-current="page">Known issues</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="../problemes.html" hreflang="fr" lang="fr">Français</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Known issues</h1>
+  <p>Nothing here matches? Email <a href="mailto:support@relay-agent.app">support@relay-agent.app</a>, reply within 48 hours. If you can, attach the app's "Sync log", which holds no health values.</p>
+
+  <h2>The workout doesn't show up on the Watch</h2>
+  <p>Since iOS 18.2, WorkoutKit, the Apple service that sends workouts to the Watch, sometimes leaves a workout scheduled on the iPhone without ever showing it on the Watch.</p>
+  <ol class="etapes">
+    <li><strong>Open Relay.</strong> The app schedules workouts while it is in the foreground, which avoids the defect most of the time. If a workout arrives while the app is in the background, it sends you a notification asking you to open it.</li>
+    <li><strong>Otherwise, reschedule everything.</strong> In the app, Settings, "Reschedule everything on the watch". The app removes and resends all workouts: this is the fix Apple recommends.</li>
+  </ol>
+  <p>The Watch only shows a workout on its planned day, in the Workout app. A workout planned for tomorrow is not there yet today.</p>
+
+  <h2>On-demand refresh doesn't respond</h2>
+  <p>Your agent asks for a sync, the iPhone doesn't answer within 25 seconds and <code>relay-agent rafraichir</code> returns <code>504</code>. Known causes:</p>
+  <ul>
+    <li><strong>The iPhone is locked.</strong> iOS encrypts Health data while the iPhone is locked: no app can read it. The wake-up works as soon as the iPhone is unlocked.</li>
+    <li><strong>Personal Hotspot is on.</strong> Silent notifications don't arrive in that case.</li>
+    <li><strong>The app was swiped away.</strong> iOS no longer relaunches it in the background. Open it once.</li>
+    <li>Apple does not guarantee delivery of silent notifications; iOS sometimes delays them.</li>
+  </ul>
+  <p>Two normal answers: if the last sync is less than two minutes old, the relay doesn't wake the iPhone and returns the data in place. Beyond 6 wake-ups in an hour, it answers <code>429</code>.</p>
+
+  <h2>Some data arrives late</h2>
+  <p>iOS wakes Relay as soon as a meal, a weigh-in, a night of sleep, a workout, an HRV or resting heart rate reading arrives. For steps, energy, exercise minutes and water, Apple limits the wake-up to once an hour at best. On-demand refresh closes the gap.</p>
+
+  <h2>"Subscription required"</h2>
+  <p>The relay answers <code>402</code> and <code>relay-agent</code> exits with code 4 when your agent plans a workout or asks for a refresh without an active subscription. Subscribe in the app, or use "Restore a purchase" if you already have. After purchase, the app passes the subscription to the relay at its next sync.</p>
+
+  <h2>"Unknown or expired session" while pairing</h2>
+  <p>A <code>relay-agent relier</code> session lasts ten minutes. Run the command again and enter the new session. If the six-digit codes differ between the app and the agent, answer "No, they differ" and start over: someone may have stepped in between.</p>
+
+  <h2>My agent has no screen to compare the code</h2>
+  <p>Use the pairing phrase: in the app, Settings, "Pairing phrase (backup)". Copy it to <code>~/.config/relay/phrase</code>, readable by you only (mode 600), or to the <code>RELAY_PHRASE</code> variable.</p>
+</main>
+
+<footer class="bas">
+  <div class="page">
+    <p><a href="./">Home</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:support@relay-agent.app">support@relay-agent.app</a></p>
+    <p>Relay is published by Julien Renaud, an independent developer in France.</p>
+  </div>
+</footer>
+</body>
+</html>

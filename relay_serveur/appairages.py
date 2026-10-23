@@ -1,9 +1,14 @@
 """Appairage par code court : sessions éphémères où l'agent et l'app échangent leurs clés publiques X25519,
 puis où l'app dépose la phrase chiffrée pour l'agent. Le relais ne voit que des clés publiques et du chiffré.
 Aucune authentification : l'agent n'a pas encore de jeton ; la comparaison des codes des deux côtés détecte
-tout intrus, et les sessions vivent dix minutes."""
+tout intrus, et les sessions vivent dix minutes.
+
+L'agent s'engage d'abord sur sa clé (SHA-256 de la clé brute) et ne la révèle qu'une fois celle de l'app posée :
+un relais malveillant doit choisir la clé qu'il présente à l'agent sans connaître celle de l'agent, il ne peut donc
+pas chercher par force brute une paire de clés qui donne le même code des deux côtés."""
 
 import base64
+import hashlib
 import os
 import re
 import sqlite3
@@ -28,6 +33,7 @@ def normaliser(saisie: str) -> str | None:
 
 
 def cle_publique_valide(texte) -> bool:
+    """32 octets en base64url sans remplissage : une clé publique X25519 comme un haché SHA-256."""
     if not isinstance(texte, str) or not re.fullmatch(r"[A-Za-z0-9_-]{43}", texte):
         return False
     try:
@@ -36,13 +42,18 @@ def cle_publique_valide(texte) -> bool:
         return False
 
 
+def tient_l_engagement(cle: str, engagement: str) -> bool:
+    hache = hashlib.sha256(base64.urlsafe_b64decode(cle + "=")).digest()
+    return base64.urlsafe_b64encode(hache).decode().rstrip("=") == engagement
+
+
 def purger(base: sqlite3.Connection, avant: float) -> int:
     return base.execute("delete from appairages where cree_le < ?", (avant,)).rowcount
 
 
 def _lire(base: sqlite3.Connection, session: str):
-    ligne = base.execute("select cle_agent, cle_app, identite, cree_le from appairages where session = ?", (session,)).fetchone()
-    if ligne is None or ligne[3] < time.time() - DUREE:
+    ligne = base.execute("select engagement, cle_agent, cle_app, identite, cree_le from appairages where session = ?", (session,)).fetchone()
+    if ligne is None or ligne[4] < time.time() - DUREE:
         raise HTTPException(404, "session d'appairage inconnue ou expirée")
     return ligne
 
@@ -77,31 +88,47 @@ def routeur() -> APIRouter:
         if len(recents) >= request.app.state.config.creations_par_heure_ip:
             raise HTTPException(429, "trop d'appairages depuis cette adresse")
         corps = await corps_json(request)
-        if not cle_publique_valide(corps.get("cle_publique_agent")):
-            raise HTTPException(400, "cle_publique_agent attendue : 32 octets en base64url")
+        if not cle_publique_valide(corps.get("engagement")):
+            raise HTTPException(400, "engagement attendu : SHA-256 de la clé de l'agent, 32 octets en base64url")
         base = request.app.state.base
         session = nouvelle_session()
-        base.execute("insert into appairages (session, cle_agent, cree_le) values (?, ?, ?)", (session, corps["cle_publique_agent"], now))
+        base.execute("insert into appairages (session, engagement, cree_le) values (?, ?, ?)", (session, corps["engagement"], now))
         recents.append(now)
         return {"session": session}
 
     @r.get("/appairages/{saisie}")
     def lire(saisie: str, request: Request):
         s = session_ou_404(saisie)
-        cle_agent, cle_app, identite, _ = _lire(request.app.state.base, s)
-        return {"cle_publique_agent": cle_agent, "cle_publique_app": cle_app, "identite_chiffree": identite}
+        engagement, cle_agent, cle_app, identite, _ = _lire(request.app.state.base, s)
+        return {"engagement": engagement, "cle_publique_agent": cle_agent, "cle_publique_app": cle_app, "identite_chiffree": identite}
 
     @r.put("/appairages/{saisie}/app")
     async def publier_cle_app(saisie: str, request: Request):
         s = session_ou_404(saisie)
         base = request.app.state.base
-        _, cle_app, _, _ = _lire(base, s)
+        _, _, cle_app, _, _ = _lire(base, s)
         corps = await corps_json(request)
         if not cle_publique_valide(corps.get("cle_publique_app")):
             raise HTTPException(400, "cle_publique_app attendue : 32 octets en base64url")
         if cle_app is not None:
             raise HTTPException(409, "la clé de l'app est déjà posée")  # un tiers ne remplace pas la première venue
         base.execute("update appairages set cle_app = ? where session = ?", (corps["cle_publique_app"], s))
+        return {"status": "posée"}
+
+    @r.put("/appairages/{saisie}/agent")
+    async def reveler_cle_agent(saisie: str, request: Request):
+        s = session_ou_404(saisie)
+        base = request.app.state.base
+        engagement, cle_agent, cle_app, _, _ = _lire(base, s)
+        corps = await corps_json(request)
+        if cle_app is None:
+            raise HTTPException(409, "la clé de l'app n'est pas encore posée")
+        if cle_agent is not None:
+            raise HTTPException(409, "la clé de l'agent est déjà posée")
+        cle = corps.get("cle_publique_agent")
+        if not cle_publique_valide(cle) or not tient_l_engagement(cle, engagement):
+            raise HTTPException(400, "cle_publique_agent attendue : 32 octets en base64url, dont le SHA-256 est l'engagement")
+        base.execute("update appairages set cle_agent = ? where session = ?", (cle, s))
         return {"status": "posée"}
 
     @r.put("/appairages/{saisie}/identite")

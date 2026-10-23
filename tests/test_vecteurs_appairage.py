@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -31,6 +32,10 @@ def test_vecteur_rejoue():
     chiffre = nonce + AESGCM(cle).encrypt(nonce, V["phrase"].encode(), V["session"].encode())
     assert chiffre.hex() == V["identite_chiffree"]
     assert AESGCM(cle).decrypt(nonce, chiffre[12:], V["session"].encode()).decode() == V["phrase"]
+
+
+def test_engagement_est_le_hache_de_la_cle_agent():
+    assert hashlib.sha256(bytes.fromhex(V["publique_agent"])).hexdigest() == V["engagement"]
 
 
 def test_aad_autre_session_refusee():

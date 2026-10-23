@@ -28,7 +28,8 @@ create table if not exists reveils (
 create index if not exists reveils_compte on reveils(compte, quand);
 create table if not exists appairages (
     session text primary key,
-    cle_agent text not null,
+    engagement text not null,
+    cle_agent text,
     cle_app text,
     identite text,
     cree_le real not null
@@ -44,5 +45,8 @@ def ouvrir(chemin: str) -> sqlite3.Connection:
     conn.execute("pragma journal_mode=wal")
     conn.execute("pragma foreign_keys=on")
     conn.execute("pragma busy_timeout=5000")
+    colonnes = {c[1] for c in conn.execute("pragma table_info(appairages)")}
+    if colonnes and "engagement" not in colonnes:
+        conn.execute("drop table appairages")  # ancien schéma, sans engagement ; les sessions sont éphémères
     conn.executescript(SCHEMA)
     return conn

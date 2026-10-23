@@ -1,6 +1,7 @@
 """Génère une fois vecteurs/appairage.json : clés X25519 tirées au sort puis figées. Ne pas relancer sans raison :
 le client Python et le paquet Swift rejouent ces valeurs."""
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,7 @@ nonce = os.urandom(12)
 chiffre = nonce + AESGCM(cle).encrypt(nonce, PHRASE.encode(), SESSION.encode())
 v = {"session": SESSION, "privee_agent": agent.private_bytes_raw().hex(), "publique_agent": agent.public_key().public_bytes_raw().hex(),
      "privee_app": app.private_bytes_raw().hex(), "publique_app": app.public_key().public_bytes_raw().hex(),
-     "cle": cle.hex(), "code": f"{code:06d}", "phrase": PHRASE, "nonce": nonce.hex(), "identite_chiffree": chiffre.hex()}
+     "cle": cle.hex(), "code": f"{code:06d}", "phrase": PHRASE, "nonce": nonce.hex(), "identite_chiffree": chiffre.hex(),
+     "engagement": hashlib.sha256(agent.public_key().public_bytes_raw()).hexdigest()}
 Path(__file__).parent.parent.joinpath("vecteurs", "appairage.json").write_text(json.dumps(v, indent=1))
 print("vecteur écrit, code", v["code"])

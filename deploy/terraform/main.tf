@@ -1,35 +1,52 @@
-data "ovh_me" "me" {}
+# La plus petite instance Public Cloud suffit : une app Python, un fichier SQLite, Caddy. (Les VPS étaient en
+# rupture partout en France à la création, en octobre 2026.) Région française : les données restent en France.
+resource "ovh_cloud_project_instance" "relay" {
+  service_name   = var.cloud_project_id
+  region         = var.region
+  name           = "relay"
+  billing_period = "monthly"
 
-# Le plus petit VPS suffit : une app Python, un fichier SQLite, Caddy.
-resource "ovh_vps" "relay" {
-  display_name   = "relay"
-  ovh_subsidiary = data.ovh_me.me.ovh_subsidiary
-
-  plan = [{
-    plan_code    = "vps-2027-model1"
-    duration     = "P1M"
-    pricing_mode = "default"
-    configuration = [
-      { label = "vps_datacenter", value = var.vps_datacenter },
-      { label = "vps_os", value = "Debian 13" },
-    ]
-  }]
-
-  plan_option = [
-    { plan_code = "option-linux", duration = "P1M", pricing_mode = "default", quantity = 1 },
-    { plan_code = "option-auto-backup-2027-1-model1", duration = "P1M", pricing_mode = "default", quantity = 1 },
-  ]
-
-  image_id       = var.vps_image_id
-  public_ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
+  flavor {
+    flavor_id = var.flavor_id
+  }
+  boot_from {
+    image_id = var.image_id
+  }
+  network {
+    public = true
+  }
+  ssh_key_create {
+    name       = "relay"
+    public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
+  }
+  # Instantané quotidien gardé 7 jours (durée annoncée dans la politique de confidentialité).
+  auto_backup {
+    cron     = "0 4 * * *"
+    rotation = 7
+  }
 }
 
-resource "ovh_domain_zone_record" "relay" {
+locals {
+  ipv4 = one([for a in ovh_cloud_project_instance.relay.addresses : a.ip if a.version == 4])
+  ipv6 = one([for a in ovh_cloud_project_instance.relay.addresses : a.ip if a.version == 6])
+}
+
+# Le relais (relay.<zone>) et le site (racine du domaine, servi par Caddy sur la même instance) ; www redirige.
+resource "ovh_domain_zone_record" "adresses" {
+  for_each  = { "relais-A" = [var.sous_domaine, "A"], "relais-AAAA" = [var.sous_domaine, "AAAA"], "site-A" = ["", "A"], "site-AAAA" = ["", "AAAA"] }
   zone      = var.zone
-  subdomain = var.sous_domaine
+  subdomain = each.value[0]
+  fieldtype = each.value[1]
+  ttl       = 300
+  target    = each.value[1] == "A" ? local.ipv4 : local.ipv6
+}
+
+resource "ovh_domain_zone_record" "www" {
+  zone      = var.zone
+  subdomain = "www"
   fieldtype = "CNAME"
-  ttl       = 60
-  target    = "${ovh_vps.relay.service_name}."
+  ttl       = 300
+  target    = "${var.zone}."
 }
 
 # Sauvegardes : bucket en région 3-AZ, séparé du VPS.
@@ -69,28 +86,4 @@ resource "ovh_cloud_project_user_s3_policy" "backups" {
       ]
     }]
   })
-}
-
-# Le site (une page statique servie par Caddy sur le même VPS) répond à la racine du domaine et à www.
-# Pas de CNAME possible à la racine : les adresses viennent du VPS.
-data "ovh_vps" "relay" {
-  service_name = ovh_vps.relay.service_name
-}
-
-# Clés connues dès le plan (un VPS neuf n'a pas encore d'adresse) : une entrée par famille d'adresse.
-resource "ovh_domain_zone_record" "site" {
-  for_each  = { A = false, AAAA = true }
-  zone      = var.zone
-  subdomain = ""
-  fieldtype = each.key
-  ttl       = 300
-  target    = one([for ip in data.ovh_vps.relay.ips : ip if strcontains(ip, ":") == each.value && !startswith(ip, "fe80")])
-}
-
-resource "ovh_domain_zone_record" "www" {
-  zone      = var.zone
-  subdomain = "www"
-  fieldtype = "CNAME"
-  ttl       = 300
-  target    = "${var.zone}."
 }

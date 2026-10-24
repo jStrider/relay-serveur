@@ -9,3 +9,4 @@ deploy/ansible/inventory.ini
 deploy/ansible/vars.yml
 deploy/terraform/.terraform/
 deploy/terraform/*.tfstate*
+deploy/ansible/vars.yml.tmp

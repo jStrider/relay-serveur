@@ -1,5 +1,5 @@
 output "host" {
-  value = ovh_vps.relay.service_name
+  value = local.ipv4
 }
 
 output "nom_public" {

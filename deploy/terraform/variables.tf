@@ -19,19 +19,25 @@ variable "ssh_public_key_path" {
   default = "~/.ssh/hermes_ed25519.pub"
 }
 
-variable "vps_image_id" {
-  description = "Image Debian 13 (GET /vps/{service}/images/available). Sa modification réinstalle le VPS."
+variable "region" {
+  description = "Région Public Cloud en France (GRA9 Gravelines, SBG5 Strasbourg) : les données restent en France (politique de confidentialité)."
   type        = string
-  default     = "f4dfe914-e786-4723-ad93-f01576604800"
-}
-
-variable "vps_datacenter" {
-  description = "GRA (Gravelines) ou SBG (Strasbourg) : les données de santé chiffrées restent en France (politique de confidentialité)."
-  type        = string
-  default     = "GRA"
+  default     = "GRA9"
 
   validation {
-    condition     = contains(["GRA", "SBG"], var.vps_datacenter)
-    error_message = "Centre de données en France seulement : GRA ou SBG."
+    condition     = can(regex("^(GRA|SBG)", var.region))
+    error_message = "Région en France seulement : GRA… ou SBG…."
   }
+}
+
+variable "flavor_id" {
+  description = "Gabarit d2-2 (1 vCPU, 2 Go) de la région (GET /cloud/project/{id}/flavor?region=…)."
+  type        = string
+  default     = "fbb7940b-4268-437c-85f8-8c27fcef0dcd"
+}
+
+variable "image_id" {
+  description = "Image Debian 13 de la région (GET /cloud/project/{id}/image?region=…). Sa modification réinstalle l'instance."
+  type        = string
+  default     = "aeab2d2c-b168-4f4a-8408-f6a50327266e"
 }

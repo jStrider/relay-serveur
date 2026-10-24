@@ -21,6 +21,7 @@ class Config:
     max_blob: int = 1024 * 1024
     requetes_par_minute: int = 600  # la première synchro dépose 13 mois × 14 métriques + les séances en une rafale
     reveils_par_heure: int = 6
+    messages_par_heure: int = 30
     creations_par_heure_ip: int = 10
     extra: dict = field(default_factory=dict)
 

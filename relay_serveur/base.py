@@ -26,6 +26,11 @@ create table if not exists reveils (
     quand real not null
 );
 create index if not exists reveils_compte on reveils(compte, quand);
+create table if not exists messages (
+    compte text not null references comptes(id) on delete cascade,
+    quand real not null
+);
+create index if not exists messages_compte on messages(compte, quand);
 create table if not exists appairages (
     session text primary key,
     engagement text not null,

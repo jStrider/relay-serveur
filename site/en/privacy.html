@@ -115,7 +115,7 @@
   <h2>8. Who receives data</h2>
   <ul>
     <li><strong>OVHcloud</strong> (OVH SAS, Roubaix, France) hosts the relay on a server in France and its backups in object storage in Paris. It is a processor under Article 28 of the GDPR. It only receives what the relay stores: health batches stay encrypted.</li>
-    <li><strong>Apple</strong> delivers the silent notifications: the relay sends it your iPhone's token and an empty notification, with no data. Apple also handles the subscription purchase and payment, as controller of its own processing, under its own privacy policy. The relay only receives the transaction signed by Apple, which it verifies locally.</li>
+    <li><strong>Apple</strong> delivers the notifications: the relay sends it your iPhone's token and either an empty silent notification or a message from your agent, encrypted by the agent, which Apple cannot read. The relay does not keep these messages; it only records when they were sent, to cap them at 30 per hour. Apple also handles the subscription purchase and payment, as controller of its own processing, under its own privacy policy. The relay only receives the transaction signed by Apple, which it verifies locally.</li>
   </ul>
   <p>The relay transfers no data outside the European Union. Apple may process the data it handles itself outside the Union, under its own commitments.</p>
 
@@ -134,7 +134,7 @@
   <h2>11. Your rights</h2>
   <p>You have the right of access, rectification, erasure, restriction, portability and objection, and you can set instructions for what happens to your data after your death.</p>
   <ul>
-    <li><strong>Erasure</strong>: in the app, Settings, "Delete my account". The relay immediately erases the account, all its batches, wake-up times, notification token and subscription status. Backups follow within the periods in section 7. Your data stays in Health, on your iPhone.</li>
+    <li><strong>Erasure</strong>: in the app, Settings, "Delete my account". The relay immediately erases the account, all its batches, wake-up and message times, notification token and subscription status. Backups follow within the periods in section 7. Your data stays in Health, on your iPhone.</li>
     <li><strong>Regenerating the phrase</strong> erases the old account from the relay and creates a new one, with a new key.</li>
     <li><strong>Access and portability</strong>: your health data is in Health on your iPhone, and <code>relay-agent sync</code> writes it in clear on your machine. For the technical data in section 4, email support. We will ask you to prove the account is yours, never for your phrase.</li>
     <li><strong>Subscription</strong>: you manage and cancel it in your Apple account settings. Deleting your Relay account does not cancel it.</li>

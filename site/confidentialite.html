@@ -115,7 +115,7 @@
   <h2>8. Qui reçoit des données</h2>
   <ul>
     <li><strong>OVHcloud</strong> (OVH SAS, Roubaix, France) héberge le relais sur un serveur en France et ses sauvegardes dans un stockage objet à Paris. C'est un sous-traitant au sens de l'article 28 du RGPD. Il ne reçoit que ce que stocke le relais : les lots de santé restent chiffrés.</li>
-    <li><strong>Apple</strong> achemine les notifications silencieuses : le relais lui envoie le jeton de ton iPhone et une notification vide, sans aucune donnée. Apple gère aussi l'achat de l'abonnement et son paiement, en tant que responsable de son propre traitement, selon sa politique de confidentialité. Le relais reçoit seulement la transaction signée par Apple, qu'il vérifie localement.</li>
+    <li><strong>Apple</strong> achemine les notifications : le relais lui envoie le jeton de ton iPhone et soit une notification silencieuse vide, soit un message de ton agent chiffré par lui, qu'Apple ne peut pas lire. Le relais ne garde pas ces messages ; il ne note que l'heure d'envoi, pour limiter leur nombre à 30 par heure. Apple gère aussi l'achat de l'abonnement et son paiement, en tant que responsable de son propre traitement, selon sa politique de confidentialité. Le relais reçoit seulement la transaction signée par Apple, qu'il vérifie localement.</li>
   </ul>
   <p>Le relais ne transfère aucune donnée hors de l'Union européenne. Apple peut traiter hors de l'Union les données qu'il gère lui-même, selon ses propres engagements.</p>
 
@@ -134,7 +134,7 @@
   <h2>11. Tes droits</h2>
   <p>Tu as un droit d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, et tu peux définir des directives sur le sort de tes données après ta mort.</p>
   <ul>
-    <li><strong>Effacement</strong> : dans l'app, Réglages, « Supprimer mon compte ». Le relais efface aussitôt le compte, tous ses lots, les dates de réveil, le jeton de notification et l'état d'abonnement. Les sauvegardes suivent dans les délais de la section 7. Tes données restent dans Santé, sur ton iPhone.</li>
+    <li><strong>Effacement</strong> : dans l'app, Réglages, « Supprimer mon compte ». Le relais efface aussitôt le compte, tous ses lots, les dates de réveil et d'envoi de messages, le jeton de notification et l'état d'abonnement. Les sauvegardes suivent dans les délais de la section 7. Tes données restent dans Santé, sur ton iPhone.</li>
     <li><strong>Régénérer la phrase</strong> efface l'ancien compte du relais et en crée un nouveau, avec une nouvelle clé.</li>
     <li><strong>Accès et portabilité</strong> : tes données de santé sont dans Santé sur ton iPhone, et <code>relay-agent sync</code> les écrit en clair sur ta machine. Pour les données techniques de la section 4, écris au support. On te demandera de prouver que le compte est le tien, jamais ta phrase.</li>
     <li><strong>Abonnement</strong> : il se gère et se résilie dans les réglages de ton compte Apple. Supprimer ton compte Relay ne le résilie pas.</li>

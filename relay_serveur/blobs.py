@@ -10,7 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from .abonnement import abonne_requis
 from .comptes import compte_courant
 
-NOM_RE = re.compile(r"(metriques/[a-z_]+/[0-9]{4}-[0-9]{2}\.json|seances/[0-9]{4}-[0-9]{2}-[0-9]{2}-[A-Za-z0-9-]+\.json|reponses/[0-9]{13}\.json|etat\.json|prevu\.json)", re.ASCII)
+NOM_RE = re.compile(r"(metriques/[a-z_]+/[0-9]{4}-[0-9]{2}\.json|seances/[0-9]{4}-[0-9]{2}-[0-9]{2}-[A-Za-z0-9-]+\.json|etat\.json|prevu\.json)", re.ASCII)
 
 
 def nom_valide(nom: str) -> bool:

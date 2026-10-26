@@ -78,6 +78,7 @@ def test_nom_valide_pur():
     assert nom_valide("metriques/step_count/2026-10.json")
     assert not nom_valide("metriques/step_count/2026-10.json\n")
     assert not nom_valide("../etat.json") and not nom_valide("metriques/a/\u0662\u0660\u0662\u0666-\u0661\u0660.json")
+    assert nom_valide("reponses/1793000000000.json") and not nom_valide("reponses/x.json")
 
 
 def test_content_length_trop_gros_413_sans_lire(config, base_tmp):

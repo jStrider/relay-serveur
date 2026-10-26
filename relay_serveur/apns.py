@@ -44,4 +44,4 @@ class Envoyeur:
     def alerter(self, token: str, env: str, chiffre: str) -> int:
         """Notification visible : un texte générique, que l'extension de l'app remplace par le message déchiffré."""
         return self._poster(token, env, {"apns-push-type": "alert", "apns-priority": "10"},
-                            {"aps": {"alert": {"loc-key": "MESSAGE_AGENT"}, "sound": "default", "mutable-content": 1}, "m": chiffre})
+                            {"aps": {"alert": {"loc-key": "MESSAGE_AGENT"}, "sound": "default", "mutable-content": 1, "category": "message"}, "m": chiffre})
